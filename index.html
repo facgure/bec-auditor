@@ -1,0 +1,2838 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=1280"/>
+  <title>BEC Auditor Platform — Frontend Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+/* BEC Platform — Design Tokens */
+:root {
+  /* Neutrals — cool institutional */
+  --ink-0: oklch(12% 0.01 250);
+  --ink-1: oklch(22% 0.012 250);
+  --ink-2: oklch(38% 0.012 250);
+  --ink-3: oklch(55% 0.01 250);
+  --ink-4: oklch(70% 0.008 250);
+
+  --paper-0: oklch(99.2% 0.003 250);
+  --paper-1: oklch(97.8% 0.004 250);
+  --paper-2: oklch(95.5% 0.005 250);
+  --paper-3: oklch(92% 0.006 250);
+  --line: oklch(88% 0.008 250);
+  --line-strong: oklch(80% 0.01 250);
+
+  /* Accent — deep institutional teal-green (energy/efficiency mission) */
+  --accent: oklch(45% 0.085 170);
+  --accent-ink: oklch(38% 0.09 170);
+  --accent-tint: oklch(95% 0.025 170);
+  --accent-line: oklch(82% 0.05 170);
+
+  /* Semantic */
+  --ok: oklch(52% 0.11 155);
+  --ok-tint: oklch(95% 0.035 155);
+  --warn: oklch(68% 0.14 75);
+  --warn-tint: oklch(96% 0.04 75);
+  --err: oklch(55% 0.17 27);
+  --err-tint: oklch(96% 0.03 27);
+  --info: oklch(52% 0.10 245);
+  --info-tint: oklch(96% 0.025 245);
+
+  /* Type */
+  --font-sans: "IBM Plex Sans Thai", "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Scale */
+  --t-xs: 11px;
+  --t-sm: 12.5px;
+  --t-base: 14px;
+  --t-md: 15px;
+  --t-lg: 17px;
+  --t-xl: 20px;
+  --t-2xl: 26px;
+  --t-3xl: 34px;
+  --t-4xl: 44px;
+
+  /* Spacing */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-xl: 14px;
+
+  --sidebar-w: 240px;
+  --topbar-h: 56px;
+}
+
+[data-theme="dark"] {
+  --ink-0: oklch(97% 0.005 250);
+  --ink-1: oklch(90% 0.008 250);
+  --ink-2: oklch(75% 0.01 250);
+  --ink-3: oklch(60% 0.012 250);
+  --ink-4: oklch(45% 0.01 250);
+  --paper-0: oklch(17% 0.012 250);
+  --paper-1: oklch(20% 0.012 250);
+  --paper-2: oklch(24% 0.013 250);
+  --paper-3: oklch(28% 0.014 250);
+  --line: oklch(30% 0.015 250);
+  --line-strong: oklch(38% 0.016 250);
+  --accent: oklch(72% 0.11 170);
+  --accent-ink: oklch(80% 0.11 170);
+  --accent-tint: oklch(26% 0.035 170);
+  --accent-line: oklch(36% 0.05 170);
+  --ok-tint: oklch(26% 0.04 155);
+  --warn-tint: oklch(28% 0.05 75);
+  --err-tint: oklch(28% 0.05 27);
+  --info-tint: oklch(26% 0.04 245);
+}
+
+[data-density="compact"] {
+  --sp-4: 12px;
+  --sp-5: 14px;
+  --sp-6: 18px;
+  --sp-8: 24px;
+  --topbar-h: 48px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  font-size: var(--t-base);
+  color: var(--ink-1);
+  background: var(--paper-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+a { color: inherit; }
+
+.mono { font-family: var(--font-mono); font-feature-settings: "tnum"; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* BEC — Component styles */
+
+/* ============ APP SHELL ============ */
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  background: var(--paper-1);
+}
+.app--noshell { display: block; grid-template-columns: 1fr; }
+
+.sidebar {
+  background: var(--paper-0);
+  border-right: 1px solid var(--line);
+  padding: var(--sp-5) 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--sp-5) var(--sp-5);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--sp-4);
+}
+.brand-mark {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--ink-0);
+  color: var(--paper-0);
+  display: grid; place-items: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 12px;
+  position: relative;
+}
+.brand-mark::after{
+  content:'';
+  position:absolute;
+  inset:3px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  opacity: .5;
+}
+.sidebar__brand .brand-txt {
+  display: flex; flex-direction: column; line-height: 1.15;
+}
+.sidebar__brand .brand-txt b { font-size: 13px; letter-spacing: .01em; }
+.sidebar__brand .brand-txt span { font-size: 10.5px; color: var(--ink-3); font-family: var(--font-mono); letter-spacing: .04em; text-transform: uppercase; }
+
+.sidebar__section {
+  padding: 0 var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.sidebar__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 0 var(--sp-2) var(--sp-2);
+}
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  line-height: 1.3;
+}
+.sidebar__item:hover { background: var(--paper-2); color: var(--ink-0); }
+.sidebar__item.is-active {
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+.sidebar__item .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ink-4);
+  flex-shrink: 0;
+}
+.sidebar__item.is-active .dot { background: var(--accent); }
+.sidebar__item .badge {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--paper-2);
+  color: var(--ink-2);
+}
+.sidebar__item.is-active .badge { background: var(--accent); color: white; }
+
+.sidebar__foot {
+  margin-top: auto;
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px;
+  font-size: var(--t-sm);
+}
+.avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-tint), var(--paper-2));
+  color: var(--accent-ink);
+  display: grid; place-items: center;
+  font-weight: 600;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
+.sidebar__foot .who { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.sidebar__foot .who b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar__foot .who span { font-size: 10.5px; color: var(--ink-3); font-family: var(--font-mono); }
+
+/* ============ MAIN + TOPBAR ============ */
+.main { min-width: 0; }
+.topbar {
+  height: var(--topbar-h);
+  background: var(--paper-0);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-6);
+  gap: var(--sp-4);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(8px);
+}
+.crumb { display: flex; align-items: center; gap: 8px; font-size: var(--t-sm); color: var(--ink-3); }
+.crumb .sep { color: var(--ink-4); }
+.crumb .here { color: var(--ink-1); font-weight: 500; }
+.topbar__search {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 4px 10px;
+  width: 280px;
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+}
+.topbar__search input { border: none; background: transparent; outline: none; flex: 1; width: 100%; }
+.topbar__search kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper-0);
+  color: var(--ink-3);
+}
+.iconbtn {
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--paper-0);
+  display: grid; place-items: center;
+  color: var(--ink-2);
+  position: relative;
+}
+.iconbtn:hover { background: var(--paper-2); }
+.iconbtn .ping {
+  position: absolute; top: 4px; right: 4px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--err);
+  box-shadow: 0 0 0 2px var(--paper-0);
+}
+
+/* ============ PAGE CONTENT ============ */
+.page { padding: var(--sp-8) var(--sp-8) var(--sp-12); max-width: 1400px; }
+.page--narrow { max-width: 880px; }
+.page__head { margin-bottom: var(--sp-8); }
+.page__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.page__eyebrow::before {
+  content:''; display:inline-block; width: 18px; height: 1px; background: var(--accent);
+}
+.page__title {
+  font-size: var(--t-3xl);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink-0);
+  margin: 0 0 8px;
+  line-height: 1.15;
+}
+.page__sub { color: var(--ink-3); font-size: var(--t-md); max-width: 64ch; }
+
+/* ============ CARDS / SURFACES ============ */
+.card {
+  background: var(--paper-0);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.card__head {
+  padding: var(--sp-5) var(--sp-6);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px;
+}
+.card__head h3 { margin: 0; font-size: var(--t-md); font-weight: 600; color: var(--ink-0); }
+.card__head .hint { font-size: var(--t-sm); color: var(--ink-3); }
+.card__body { padding: var(--sp-6); }
+
+.stat {
+  padding: var(--sp-5) var(--sp-6);
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--paper-0);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  position: relative;
+  overflow: hidden;
+}
+.stat__label { font-size: var(--t-xs); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+.stat__value { font-size: var(--t-3xl); font-weight: 500; color: var(--ink-0); line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat__meta { font-size: var(--t-sm); color: var(--ink-3); display: flex; align-items: center; gap: 6px; margin-top: 2px;}
+.stat__meta .delta.up { color: var(--ok); }
+.stat__meta .delta.down { color: var(--err); }
+.stat__accent {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent);
+  opacity: 0;
+}
+.stat.is-primary .stat__accent { opacity: 1; }
+
+/* ============ BUTTONS ============ */
+.btn {
+  --bg: var(--paper-0);
+  --fg: var(--ink-1);
+  --bd: var(--line-strong);
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--bd);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  line-height: 1.2;
+  transition: background .1s, border-color .1s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--paper-2); }
+.btn--primary {
+  --bg: var(--ink-0);
+  --fg: var(--paper-0);
+  --bd: var(--ink-0);
+}
+.btn--primary:hover { --bg: var(--ink-1); }
+.btn--accent {
+  --bg: var(--accent);
+  --fg: white;
+  --bd: var(--accent);
+}
+.btn--accent:hover { filter: brightness(1.08); }
+.btn--ghost { --bg: transparent; --bd: transparent; }
+.btn--ghost:hover { background: var(--paper-2); }
+.btn--danger { --bg: var(--err-tint); --fg: var(--err); --bd: var(--err-tint); }
+.btn--sm { padding: 5px 10px; font-size: var(--t-xs); }
+.btn--lg { padding: 12px 20px; font-size: var(--t-md); }
+.btn--block { width: 100%; justify-content: center; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ============ BADGE / CHIP ============ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 100px;
+  font-size: var(--t-xs);
+  font-weight: 500;
+  background: var(--paper-2);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.chip .d { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip--ok { background: var(--ok-tint); color: var(--ok); border-color: transparent; }
+.chip--warn { background: var(--warn-tint); color: oklch(42% 0.14 75); border-color: transparent; }
+.chip--err { background: var(--err-tint); color: var(--err); border-color: transparent; }
+.chip--info { background: var(--info-tint); color: var(--info); border-color: transparent; }
+.chip--accent { background: var(--accent-tint); color: var(--accent-ink); border-color: transparent; }
+.chip--solid { background: var(--ink-0); color: var(--paper-0); border-color: transparent; }
+
+/* ============ FORMS ============ */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__label {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--ink-1);
+  display: flex; align-items: center; gap: 6px;
+}
+.field__label .req { color: var(--err); }
+.field__hint { font-size: var(--t-xs); color: var(--ink-3); }
+.field__error { font-size: var(--t-xs); color: var(--err); }
+.input, .select, .textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--paper-0);
+  font-size: var(--t-sm);
+  color: var(--ink-0);
+  outline: none;
+  transition: border-color .1s, box-shadow .1s;
+}
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-tint);
+}
+.input[readonly], .input:disabled { background: var(--paper-2); color: var(--ink-2); cursor: not-allowed; }
+.input--locked { background: var(--paper-2); color: var(--ink-1); }
+.input--locked::after { content: '🔒'; }
+.input-group { position: relative; }
+.input-group .prefix, .input-group .suffix {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  color: var(--ink-3); font-family: var(--font-mono); font-size: 11px; pointer-events: none;
+}
+.input-group .prefix { left: 12px; }
+.input-group .suffix { right: 12px; }
+.input-group .input.has-prefix { padding-left: 52px; }
+
+.checkbox {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: var(--t-sm); color: var(--ink-1);
+  padding: 8px 0; cursor: pointer;
+  line-height: 1.5;
+}
+.checkbox input { margin: 3px 0 0; accent-color: var(--accent); }
+.checkbox .sub { color: var(--ink-3); font-size: var(--t-xs); display: block; margin-top: 2px; }
+
+.radio-group { display: flex; gap: 8px; }
+.radio {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--paper-0);
+  cursor: pointer;
+  display: flex; gap: 10px; align-items: center;
+  font-size: var(--t-sm);
+  transition: all .1s;
+}
+.radio:hover { border-color: var(--ink-3); }
+.radio input { accent-color: var(--accent); }
+.radio.is-active { border-color: var(--accent); background: var(--accent-tint); color: var(--accent-ink); }
+
+/* ============ TABLE ============ */
+.tbl { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+.tbl th, .tbl td { padding: 12px 16px; text-align: left; vertical-align: middle; }
+.tbl thead th {
+  font-weight: 500; font-size: 10.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); background: var(--paper-1);
+  font-family: var(--font-mono);
+}
+.tbl tbody tr { border-bottom: 1px solid var(--line); }
+.tbl tbody tr:last-child { border-bottom: 0; }
+.tbl tbody tr:hover { background: var(--paper-1); }
+.tbl tbody tr.is-active { background: var(--accent-tint); }
+.tbl .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.tbl .actions { text-align: right; white-space: nowrap; }
+.tbl .muted { color: var(--ink-3); }
+
+/* ============ TIMELINE ============ */
+.timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+.tl-step {
+  display: grid; grid-template-columns: 40px 1fr auto; gap: 16px;
+  padding: 16px 0; position: relative;
+}
+.tl-step:not(:last-child)::before {
+  content:''; position: absolute; left: 19px; top: 40px; bottom: -16px;
+  width: 2px; background: var(--line);
+}
+.tl-step.is-done:not(:last-child)::before { background: var(--accent); }
+.tl-step__dot {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--paper-0);
+  border: 2px solid var(--line);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  position: relative; z-index: 1;
+}
+.tl-step.is-done .tl-step__dot { background: var(--accent); border-color: var(--accent); color: white; }
+.tl-step.is-current .tl-step__dot {
+  border-color: var(--accent); color: var(--accent-ink); background: var(--paper-0);
+  box-shadow: 0 0 0 4px var(--accent-tint);
+}
+.tl-step.is-error .tl-step__dot { background: var(--err); border-color: var(--err); color: white; }
+.tl-step__body h5 { margin: 2px 0 2px; font-size: var(--t-md); font-weight: 500; color: var(--ink-0); }
+.tl-step__body p { margin: 0; font-size: var(--t-sm); color: var(--ink-3); }
+.tl-step__meta { font-size: var(--t-xs); color: var(--ink-3); font-family: var(--font-mono); align-self: start; padding-top: 14px; text-align: right; }
+
+/* ============ STEPPER (HORIZONTAL) ============ */
+.stepper {
+  display: flex; align-items: center; gap: 0;
+  padding: var(--sp-4) 0;
+}
+.stepper__item { display: flex; align-items: center; gap: 10px; flex: 1; }
+.stepper__item:last-child { flex: 0; }
+.stepper__dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  background: var(--paper-0);
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 600; font-family: var(--font-mono);
+  color: var(--ink-3);
+  flex-shrink: 0;
+}
+.stepper__item.is-done .stepper__dot { background: var(--accent); border-color: var(--accent); color: white; }
+.stepper__item.is-current .stepper__dot {
+  border-color: var(--accent); color: var(--accent-ink);
+  box-shadow: 0 0 0 4px var(--accent-tint);
+}
+.stepper__label {
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.stepper__item.is-current .stepper__label { color: var(--ink-0); font-weight: 500; }
+.stepper__item.is-done .stepper__label { color: var(--ink-1); }
+.stepper__line { flex: 1; height: 1.5px; background: var(--line); margin: 0 12px; }
+.stepper__item.is-done .stepper__line, .stepper__item.is-current .stepper__line { background: var(--accent); opacity: .4; }
+
+/* ============ UPLOAD ============ */
+.upload {
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  padding: var(--sp-8);
+  text-align: center;
+  background: var(--paper-1);
+  transition: all .15s;
+  cursor: pointer;
+}
+.upload:hover { border-color: var(--accent); background: var(--accent-tint); }
+.upload__icon { font-family: var(--font-mono); font-size: 24px; color: var(--ink-3); }
+.upload__title { font-size: var(--t-md); font-weight: 500; color: var(--ink-0); margin: 8px 0 4px; }
+.upload__hint { font-size: var(--t-xs); color: var(--ink-3); font-family: var(--font-mono); }
+
+.file-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper-0);
+  font-size: var(--t-sm);
+}
+.file-row__icon {
+  width: 36px; height: 44px;
+  background: var(--err-tint);
+  color: var(--err);
+  border-radius: 3px;
+  display: grid; place-items: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  flex-shrink: 0;
+}
+.file-row__body { flex: 1; min-width: 0; }
+.file-row__name { color: var(--ink-0); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-row__meta { font-size: var(--t-xs); color: var(--ink-3); font-family: var(--font-mono); }
+
+/* ============ NOTICE / ALERT ============ */
+.notice {
+  display: flex; gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--info-tint);
+  border-left: 3px solid var(--info);
+  font-size: var(--t-sm);
+  color: var(--ink-1);
+}
+.notice--warn { background: var(--warn-tint); border-color: var(--warn); }
+.notice--err { background: var(--err-tint); border-color: var(--err); }
+.notice--ok { background: var(--ok-tint); border-color: var(--ok); }
+.notice--accent { background: var(--accent-tint); border-color: var(--accent); }
+.notice b { font-weight: 600; color: var(--ink-0); }
+.notice__icon { font-family: var(--font-mono); flex-shrink: 0; font-weight: 600; }
+
+/* ============ TWEAKS PANEL ============ */
+.tweaks {
+  position: fixed; right: 20px; bottom: 20px;
+  width: 300px;
+  background: var(--paper-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  box-shadow: 0 12px 40px rgba(20,30,50,.12);
+  z-index: 1000;
+  font-size: var(--t-sm);
+}
+.tweaks__head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tweaks__head h4 { margin: 0; font-size: var(--t-sm); font-weight: 600; letter-spacing: .02em; }
+.tweaks__head .x { background: none; border: none; color: var(--ink-3); font-size: 16px; }
+.tweaks__body { padding: 14px; display: flex; flex-direction: column; gap: 14px; max-height: 60vh; overflow-y: auto; }
+.tweaks__row { display: flex; flex-direction: column; gap: 6px; }
+.tweaks__row > label { font-size: var(--t-xs); color: var(--ink-3); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+.swatches { display: flex; gap: 6px; }
+.swatch {
+  width: 28px; height: 28px; border-radius: 6px; border: 1.5px solid var(--line);
+  cursor: pointer; padding: 0; position: relative;
+}
+.swatch.is-active { border-color: var(--ink-0); box-shadow: 0 0 0 2px var(--paper-0), 0 0 0 3px var(--ink-0); }
+.seg {
+  display: flex; gap: 2px; padding: 2px;
+  background: var(--paper-2); border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+}
+.seg button {
+  flex: 1; padding: 6px 10px; border: none; background: transparent;
+  font-size: var(--t-xs); color: var(--ink-2); border-radius: 3px;
+  font-family: inherit;
+}
+.seg button.is-active { background: var(--paper-0); color: var(--ink-0); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+
+/* ============ CERTIFICATE PREVIEW ============ */
+.cert {
+  aspect-ratio: 1 / 1.414;
+  background: var(--paper-0);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8%;
+  position: relative;
+  display: flex; flex-direction: column;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 20px 40px -20px rgba(0,0,0,.12);
+  background-image:
+    linear-gradient(var(--accent-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--accent-line) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center;
+  overflow: hidden;
+}
+.cert::before {
+  content:''; position: absolute; inset: 6%;
+  border: 1px solid var(--accent-line);
+  border-radius: 2px;
+  background: var(--paper-0);
+}
+.cert__inner { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; padding: 4%; }
+
+/* ============ PDF viewer mock ============ */
+.pdf-viewer {
+  background: var(--ink-0);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.pdf-viewer__bar {
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  background: oklch(20% 0.012 250);
+  color: var(--paper-1);
+  font-size: var(--t-xs);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid oklch(28% 0.012 250);
+}
+.pdf-viewer__canvas {
+  flex: 1; display: grid; place-items: center;
+  background: oklch(30% 0.012 250);
+  padding: 20px;
+  min-height: 400px;
+}
+.pdf-page {
+  background: var(--paper-0);
+  aspect-ratio: 1 / 1.3;
+  width: 100%; max-width: 420px;
+  padding: 40px;
+  display: flex; flex-direction: column;
+  gap: 14px;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0,0,0,.3);
+  color: var(--ink-1);
+}
+.pdf-page__line {
+  height: 8px; background: var(--paper-3); border-radius: 2px;
+}
+.pdf-page__line.w80 { width: 80%; }
+.pdf-page__line.w60 { width: 60%; }
+.pdf-page__line.w40 { width: 40%; }
+.pdf-annot {
+  position: absolute;
+  background: oklch(90% 0.14 75 / 0.4);
+  border: 1.5px solid var(--warn);
+  border-radius: 2px;
+  padding: 2px 4px;
+  font-size: 9px;
+  color: oklch(30% 0.14 75);
+  font-family: var(--font-mono);
+  pointer-events: none;
+}
+
+/* ============ MISC ============ */
+.grid { display: grid; gap: var(--sp-4); }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.flex { display: flex; }
+.row { display: flex; align-items: center; gap: var(--sp-3); }
+.row--between { justify-content: space-between; }
+.col { display: flex; flex-direction: column; gap: var(--sp-3); }
+.gap-2 { gap: var(--sp-2); }
+.gap-4 { gap: var(--sp-4); }
+.gap-6 { gap: var(--sp-6); }
+.gap-8 { gap: var(--sp-8); }
+.mt-2 { margin-top: var(--sp-2); } .mt-4 { margin-top: var(--sp-4); } .mt-6 { margin-top: var(--sp-6); } .mt-8 { margin-top: var(--sp-8); }
+.mb-2 { margin-bottom: var(--sp-2); } .mb-4 { margin-bottom: var(--sp-4); } .mb-6 { margin-bottom: var(--sp-6); } .mb-8 { margin-bottom: var(--sp-8); }
+.w-full { width: 100%; }
+.muted { color: var(--ink-3); }
+.small { font-size: var(--t-xs); }
+.divider { height: 1px; background: var(--line); margin: var(--sp-4) 0; }
+.pill-dim {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 6px; border-radius: 3px;
+  background: var(--paper-2); color: var(--ink-3);
+}
+
+/* ============ PLACEHOLDER ART ============ */
+.placeholder {
+  background: var(--paper-2);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0, transparent 8px,
+    var(--paper-3) 8px, var(--paper-3) 10px
+  );
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  display: grid; place-items: center;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* ============ LOGIN STAGE ============ */
+.auth-stage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--paper-0);
+}
+.auth-stage__left {
+  padding: var(--sp-10);
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  background: var(--ink-0);
+  color: var(--paper-0);
+  position: relative;
+  overflow: hidden;
+}
+.auth-stage__left::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, var(--accent) 0, transparent 40%),
+    radial-gradient(circle at 80% 70%, oklch(50% 0.08 200) 0, transparent 40%);
+  opacity: .15;
+}
+.auth-stage__left > * { position: relative; z-index: 1; }
+.auth-stage__right {
+  padding: var(--sp-10);
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-card { width: 100%; max-width: 400px; }
+.brand-lg { display: flex; align-items: center; gap: 14px; }
+.brand-lg .brand-mark { width: 44px; height: 44px; font-size: 16px; border-radius: 8px; }
+.brand-lg .brand-txt b { font-size: 17px; letter-spacing: .01em; }
+.brand-lg .brand-txt span { font-size: 11px; font-family: var(--font-mono); letter-spacing: .08em; color: var(--ink-3); text-transform: uppercase; }
+.auth-stage__left .brand-lg .brand-txt b { color: var(--paper-0); }
+.auth-stage__left .brand-lg .brand-txt span { color: oklch(70% 0.01 250); }
+.auth-stage__left .brand-lg .brand-mark { background: var(--paper-0); color: var(--ink-0); }
+
+.sso-btn {
+  width: 100%;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--paper-0);
+  font-size: var(--t-md);
+  color: var(--ink-0);
+  font-weight: 500;
+  transition: all .1s;
+  text-align: left;
+}
+.sso-btn:hover { border-color: var(--accent); background: var(--accent-tint); }
+.sso-btn__ico {
+  width: 32px; height: 32px; border-radius: 6px;
+  display: grid; place-items: center;
+  background: var(--paper-2);
+  color: var(--ink-0);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+}
+.sso-btn__sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--ink-3); margin-top: 2px; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .auth-stage { grid-template-columns: 1fr; }
+  .auth-stage__left { display: none; }
+}
+
+@keyframes pulse { 0%, 100% { opacity:1 } 50% { opacity:.4 } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <script>
+// ===== SEED DATA =====
+const APPLICATIONS = [
+  { id: 'APP-2568-00412', appliedAt: '2025-09-12', status: 'completed', updatedAt: '2025-11-08', certNo: 'ผต.บพ.2568/00412', expiresAt: '2030-11-08', courseName: 'หลักสูตรผู้ตรวจประเมินอาคารฯ ประจำปี 2568', license: 'วฟก.3415', profession: 'วิศวกร', progress: 4 },
+  { id: 'APP-2568-00587', appliedAt: '2025-10-04', status: 'reviewing', updatedAt: '2025-11-10', courseName: 'หลักสูตรผู้ตรวจประเมินอาคารฯ ประจำปี 2568', license: 'วฟก.3415', profession: 'วิศวกร', progress: 2, dueAt: '2025-12-04', daysLeft: 28 },
+  { id: 'APP-2568-00712', appliedAt: '2025-10-22', status: 'revise', updatedAt: '2025-11-09', courseName: 'หลักสูตรทบทวนผู้ตรวจประเมินฯ 2568', license: 'วฟก.3415', profession: 'วิศวกร', progress: 2, dueAt: '2025-11-24', daysLeft: 14, reviseNote: 'สำเนาวุฒิบัตรไม่ชัด กรุณาสแกนใหม่พร้อมลายเซ็นรับรอง' },
+  { id: 'APP-2568-00044', appliedAt: '2025-02-18', status: 'expired', updatedAt: '2025-04-18', courseName: 'หลักสูตรผู้ตรวจประเมินอาคารฯ ประจำปี 2567', license: 'วฟก.3415', profession: 'วิศวกร', progress: 4, certNo: 'ผต.บพ.2567/00044' },
+];
+
+const STAFF_QUEUE = [
+  { id: 'APP-2568-00712', applicant: 'สมชาย ใจดี',       profession: 'วิศวกร',   submittedAt: '2025-10-22', dueAt: '2025-12-21', daysLeft: 41, status: 'revise',    assignee: null },
+  { id: 'APP-2568-00587', applicant: 'ณัฐพล วงศ์ใหญ่',   profession: 'วิศวกร',   submittedAt: '2025-10-04', dueAt: '2025-12-03', daysLeft: 23, status: 'reviewing', assignee: 'คุณปิยะ' },
+  { id: 'APP-2568-00601', applicant: 'อัจฉรา กิตติศัพท์', profession: 'สถาปนิก', submittedAt: '2025-10-07', dueAt: '2025-12-06', daysLeft: 26, status: 'reviewing', assignee: 'คุณปิยะ' },
+  { id: 'APP-2568-00628', applicant: 'ธนพล สุขสมบูรณ์',   profession: 'วิศวกร',   submittedAt: '2025-10-12', dueAt: '2025-12-11', daysLeft: 31, status: 'pending',   assignee: null },
+  { id: 'APP-2568-00644', applicant: 'ปิยะดา พงษ์พานิช', profession: 'สถาปนิก', submittedAt: '2025-10-14', dueAt: '2025-12-13', daysLeft: 33, status: 'submitted', assignee: null },
+  { id: 'APP-2568-00663', applicant: 'กิตติ ศรีสุวรรณ',  profession: 'วิศวกร',   submittedAt: '2025-10-16', dueAt: '2025-12-15', daysLeft: 35, status: 'submitted', assignee: null },
+  { id: 'APP-2568-00498', applicant: 'วิโรจน์ ทองเจริญ', profession: 'วิศวกร',   submittedAt: '2025-09-28', dueAt: '2025-11-17', daysLeft: 4,  status: 'pending',   assignee: 'คุณปิยะ' },
+  { id: 'APP-2568-00512', applicant: 'สุภาวดี มณีวงศ์',  profession: 'สถาปนิก', submittedAt: '2025-09-30', dueAt: '2025-11-19', daysLeft: 6,  status: 'reviewing', assignee: 'คุณปิยะ' },
+];
+
+const COURSES = [
+  'หลักสูตรผู้ตรวจประเมินอาคารฯ ประจำปี 2568 (รุ่นที่ 1)',
+  'หลักสูตรผู้ตรวจประเมินอาคารฯ ประจำปี 2568 (รุ่นที่ 2)',
+  'หลักสูตรทบทวนผู้ตรวจประเมินฯ 2568',
+  'หลักสูตรผู้ตรวจประเมินอาคารฯ ประจำปี 2567 (รุ่นที่ 3)',
+];
+
+const TIMELINE_FULL = [
+  { key: 'submit',   title: 'ยื่นคำขอ',                    desc: 'ผู้ยื่นส่งคำขอและเอกสารครบถ้วน' },
+  { key: 'review',   title: 'ตรวจสอบเอกสาร',              desc: 'เจ้าหน้าที่ พพ. ตรวจสอบความถูกต้อง' },
+  { key: 'approval', title: 'รออนุมัติ (e-Approval)',       desc: 'ผู้จัดการลงนามอิเล็กทรอนิกส์' },
+  { key: 'cert',     title: 'ออกใบรับรอง',                 desc: 'พร้อมดาวน์โหลดและตรวจสอบด้วย QR' },
+];
+
+const REVISION_CHECKLIST = [
+  { id: 'cert', label: 'สำเนาวุฒิบัตรฝึกอบรม', desc: 'สแกนหน้า-หลังให้ชัดเจน พร้อมลายเซ็นรับรองสำเนา' },
+  { id: 'license', label: 'สำเนาใบอนุญาตประกอบวิชาชีพ', desc: 'ต้องยังไม่หมดอายุ ณ วันที่ยื่นคำขอ' },
+];
+
+Object.assign(window, { APPLICATIONS, STAFF_QUEUE, COURSES, TIMELINE_FULL, REVISION_CHECKLIST });
+
+  </script>
+
+  <script type="text/babel" data-presets="react">
+// Shared primitives used across the BEC prototype
+const { useState, useEffect, useRef, useMemo, createContext, useContext } = React;
+
+// ===== ICONS (minimal line) =====
+const Icon = ({ name, size = 16, stroke = 1.6 }) => {
+  const paths = {
+    home: <><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1Z"/></>,
+    file: <><path d="M6 3h9l4 4v14H6Z"/><path d="M14 3v5h5"/></>,
+    check: <><path d="M4 12l5 5 11-11"/></>,
+    x: <><path d="M5 5l14 14M19 5 5 19"/></>,
+    plus: <><path d="M12 5v14M5 12h14"/></>,
+    arrow: <><path d="M5 12h14M13 6l6 6-6 6"/></>,
+    arrowL: <><path d="M19 12H5M11 6l-6 6 6 6"/></>,
+    search: <><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></>,
+    bell: <><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 7H4s2-2 2-7Z"/><path d="M10 21a2 2 0 0 0 4 0"/></>,
+    user: <><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></>,
+    users: <><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="10" r="2.5"/><path d="M2 20a7 7 0 0 1 14 0M15 20a5 5 0 0 1 7 0"/></>,
+    shield: <><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/></>,
+    clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
+    download: <><path d="M12 4v12M6 12l6 6 6-6M4 20h16"/></>,
+    upload: <><path d="M12 20V8M6 14l6-6 6 6M4 4h16"/></>,
+    doc: <><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 8h6M9 12h6M9 16h4"/></>,
+    grid: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></>,
+    chart: <><path d="M4 20V8M10 20v-5M16 20V4M22 20H2"/></>,
+    gear: <><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></>,
+    logout: <><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5M16 8l5 4-5 4M9 12h12"/></>,
+    eye: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></>,
+    filter: <><path d="M3 5h18l-7 9v6l-4-2v-4Z"/></>,
+    qr: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M17 17h4v4"/></>,
+    alert: <><path d="M12 9v4M12 17h.01M10.3 3.9 2 19a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></>,
+    menu: <><path d="M3 6h18M3 12h18M3 18h18"/></>,
+    sparkle: <><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></>,
+    pen: <><path d="M4 20h4l10-10-4-4L4 16Z"/><path d="m14 6 4 4"/></>,
+    chevR: <><path d="m9 6 6 6-6 6"/></>,
+    chevL: <><path d="m15 6-6 6 6 6"/></>,
+    chevD: <><path d="m6 9 6 6 6-6"/></>,
+    refresh: <><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></>,
+    link: <><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></>,
+    share: <><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></>,
+    tag: <><path d="m21 12-9 9-9-9 9-9h9Z"/><circle cx="16" cy="8" r="1.5"/></>,
+    mail: <><rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 7 9 7 9-7"/></>,
+    globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
+      {paths[name] || null}
+    </svg>
+  );
+};
+
+// ===== APP CONTEXT (routing + role + state) =====
+const AppCtx = createContext(null);
+const useApp = () => useContext(AppCtx);
+
+// ===== BUTTON =====
+const Btn = ({ variant = 'default', size, icon, iconRight, children, block, ...rest }) => {
+  const cls = ['btn'];
+  if (variant !== 'default') cls.push(`btn--${variant}`);
+  if (size) cls.push(`btn--${size}`);
+  if (block) cls.push('btn--block');
+  return (
+    <button className={cls.join(' ')} {...rest}>
+      {icon && <Icon name={icon} size={14} />}
+      {children}
+      {iconRight && <Icon name={iconRight} size={14} />}
+    </button>
+  );
+};
+
+// ===== CHIP / BADGE =====
+const Chip = ({ tone = 'default', dot, children, solid }) => {
+  const cls = ['chip'];
+  if (tone !== 'default') cls.push(`chip--${tone}`);
+  if (solid) cls.push('chip--solid');
+  return <span className={cls.join(' ')}>{dot && <span className="d"/>}{children}</span>;
+};
+
+// ===== STAT CARD =====
+const Stat = ({ label, value, meta, delta, primary }) => (
+  <div className={`stat ${primary ? 'is-primary' : ''}`}>
+    <div className="stat__accent"/>
+    <div className="stat__label">{label}</div>
+    <div className="stat__value tnum">{value}</div>
+    {(meta || delta) && (
+      <div className="stat__meta">
+        {delta && <span className={`delta ${delta.startsWith('+') ? 'up' : 'down'}`}>{delta}</span>}
+        {meta}
+      </div>
+    )}
+  </div>
+);
+
+// ===== STATUS MAPPING =====
+const STATUS = {
+  draft:        { label: 'ร่าง',               tone: 'default' },
+  submitted:    { label: 'ยื่นคำขอแล้ว',       tone: 'info'    },
+  reviewing:    { label: 'อยู่ระหว่างตรวจสอบ',  tone: 'info'    },
+  revise:       { label: 'แก้ไขเอกสาร',         tone: 'warn'    },
+  pending:      { label: 'รออนุมัติ',           tone: 'warn'    },
+  approved:     { label: 'อนุมัติแล้ว',         tone: 'ok'      },
+  completed:    { label: 'สำเร็จ',              tone: 'ok'      },
+  rejected:     { label: 'ไม่อนุมัติ',          tone: 'err'     },
+  expired:      { label: 'หมดอายุ',             tone: 'default' },
+};
+
+const StatusChip = ({ status }) => {
+  const s = STATUS[status] || { label: status, tone: 'default' };
+  return <Chip tone={s.tone} dot>{s.label}</Chip>;
+};
+
+// ===== THAI DATE =====
+const thDate = (d) => {
+  const dt = typeof d === 'string' ? new Date(d) : d;
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${dt.getDate()} ${months[dt.getMonth()]} ${(dt.getFullYear()+543).toString().slice(-2)}`;
+};
+
+// Export to window for other scripts
+Object.assign(window, {
+  Icon, Btn, Chip, Stat, StatusChip, STATUS, thDate, AppCtx, useApp,
+});
+
+// ===== APP SHELL (sidebar + topbar) =====
+
+const SIDEBAR_NAVS = {
+  applicant: [
+    { group: 'งานของฉัน', items: [
+      { id: 'dashboard', label: 'หน้าหลัก', icon: 'home' },
+      { id: 'new', label: 'ยื่นคำขอใหม่', icon: 'plus' },
+      { id: 'certificate', label: 'ใบรับรองของฉัน', icon: 'shield' },
+    ]},
+    { group: 'ช่วยเหลือ', items: [
+      { id: 'guide', label: 'คู่มือการใช้งาน', icon: 'doc' },
+      { id: 'contact', label: 'ติดต่อเจ้าหน้าที่', icon: 'mail' },
+    ]},
+  ],
+  staff: [
+    { group: 'คิวงาน', items: [
+      { id: 'dashboard', label: 'ภาพรวม', icon: 'home' },
+      { id: 'queue', label: 'ตรวจสอบเอกสาร', icon: 'file', badge: 12 },
+      { id: 'approvals', label: 'e-Approval', icon: 'check', badge: 3 },
+      { id: 'batch', label: 'พิมพ์สรุปรายชื่อ', icon: 'doc' },
+    ]},
+    { group: 'รายงาน', items: [
+      { id: 'reports', label: 'สถิติ & รายงาน', icon: 'chart' },
+    ]},
+  ],
+  admin: [
+    { group: 'จัดการระบบ', items: [
+      { id: 'users', label: 'ผู้ใช้งาน', icon: 'users' },
+      { id: 'master', label: 'ข้อมูลหลัก', icon: 'grid' },
+      { id: 'templates', label: 'เทมเพลตเอกสาร', icon: 'doc' },
+    ]},
+    { group: 'ตรวจสอบ', items: [
+      { id: 'audit', label: 'Audit Log', icon: 'shield' },
+      { id: 'documents', label: 'ค้นหาเอกสาร', icon: 'search' },
+    ]},
+  ],
+};
+
+const ROLE_META = {
+  applicant: { name: 'สมชาย ใจดี', role: 'ผู้ตรวจประเมิน', initials: 'สช' },
+  staff:     { name: 'ปิยะ เจริญพงศ์', role: 'เจ้าหน้าที่ พพ.', initials: 'ปจ' },
+  admin:     { name: 'Admin Console', role: 'System Administrator', initials: 'AD' },
+};
+
+const Sidebar = () => {
+  const { role, page, go } = useApp();
+  const navs = SIDEBAR_NAVS[role] || [];
+  const me = ROLE_META[role];
+  return (
+    <aside className="sidebar">
+      <div className="sidebar__brand">
+        <div className="brand-mark">BEC</div>
+        <div className="brand-txt">
+          <b>BEC Platform</b>
+          <span>Auditor Registry</span>
+        </div>
+      </div>
+      {navs.map((group, gi) => (
+        <div className="sidebar__section" key={gi}>
+          <div className="sidebar__label">{group.group}</div>
+          {group.items.map(item => (
+            <button
+              key={item.id}
+              className={`sidebar__item ${page === item.id ? 'is-active' : ''}`}
+              onClick={() => go(item.id)}
+            >
+              <Icon name={item.icon} size={15}/>
+              {item.label}
+              {item.badge != null && <span className="badge mono">{item.badge}</span>}
+            </button>
+          ))}
+        </div>
+      ))}
+      <div className="sidebar__foot">
+        <div className="avatar">{me.initials}</div>
+        <div className="who">
+          <b>{me.name}</b>
+          <span>{me.role}</span>
+        </div>
+        <button className="iconbtn" style={{marginLeft:'auto', width:28, height:28}} onClick={() => go('__logout')} title="ออกจากระบบ">
+          <Icon name="logout" size={14}/>
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+const Topbar = ({ crumb }) => {
+  const { role, switchRole } = useApp();
+  return (
+    <div className="topbar">
+      <div className="crumb">
+        {crumb.map((c, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <span className="sep">/</span>}
+            <span className={i === crumb.length-1 ? 'here' : ''}>{c}</span>
+          </React.Fragment>
+        ))}
+      </div>
+      <div className="topbar__search">
+        <Icon name="search" size={13}/>
+        <input placeholder="ค้นหาคำขอ, ผู้ยื่น, เลขที่เอกสาร..."/>
+        <kbd>⌘K</kbd>
+      </div>
+      <div className="seg" style={{padding:2}}>
+        {['applicant','staff','admin'].map(r => (
+          <button key={r} className={role===r ? 'is-active' : ''} onClick={() => switchRole(r)} title={`สลับเป็น ${r}`}>
+            {r === 'applicant' ? 'ผู้ยื่น' : r === 'staff' ? 'เจ้าหน้าที่' : 'Admin'}
+          </button>
+        ))}
+      </div>
+      <button className="iconbtn" title="การแจ้งเตือน"><Icon name="bell" size={14}/><span className="ping"/></button>
+      <button className="iconbtn" title="ตั้งค่า"><Icon name="gear" size={14}/></button>
+    </div>
+  );
+};
+
+const Shell = ({ crumb, children }) => (
+  <div className="app">
+    <Sidebar/>
+    <main className="main">
+      <Topbar crumb={crumb}/>
+      {children}
+    </main>
+  </div>
+);
+
+Object.assign(window, { Shell, Sidebar, Topbar, ROLE_META });
+
+// ===== LOGIN PAGES =====
+
+const LoginApplicant = () => {
+  const { go } = useApp();
+  return (
+    <div className="auth-stage">
+      <div className="auth-stage__left">
+        <div className="brand-lg">
+          <div className="brand-mark">BEC</div>
+          <div className="brand-txt">
+            <b>BEC Auditor Platform</b>
+            <span>กรมพัฒนาพลังงานทดแทนฯ</span>
+          </div>
+        </div>
+        <div>
+          <div className="page__eyebrow" style={{color:'oklch(80% 0.06 170)'}}>สำหรับผู้ตรวจประเมิน</div>
+          <h1 style={{fontSize: '42px', fontWeight: 500, lineHeight:1.1, letterSpacing:'-0.01em', margin:'0 0 16px'}}>
+            ขึ้นทะเบียน<br/>
+            ผู้ตรวจประเมิน<br/>
+            <span style={{color:'oklch(80% 0.1 170)'}}>อาคารอนุรักษ์พลังงาน</span>
+          </h1>
+          <p style={{color:'oklch(75% 0.01 250)', fontSize:15, maxWidth:'46ch', lineHeight:1.6}}>
+            ระบบขึ้นทะเบียน ต่ออายุ และตรวจสอบใบรับรองผู้ตรวจประเมินอาคารตามเกณฑ์ BEC
+            ยื่นออนไลน์ ตรวจสอบสถานะเรียลไทม์ ลงนามอิเล็กทรอนิกส์
+          </p>
+        </div>
+        <div style={{display:'flex', gap:24, fontSize:12, fontFamily:'var(--font-mono)', color:'oklch(70% 0.01 250)', letterSpacing:'.06em'}}>
+          <div><div style={{color:'oklch(85% 0.06 170)', fontSize:18, marginBottom:2, fontWeight:500}}>1,284</div>ผู้ตรวจที่ขึ้นทะเบียน</div>
+          <div><div style={{color:'oklch(85% 0.06 170)', fontSize:18, marginBottom:2, fontWeight:500}}>60</div>วันทำการสูงสุด</div>
+          <div><div style={{color:'oklch(85% 0.06 170)', fontSize:18, marginBottom:2, fontWeight:500}}>24/7</div>ให้บริการออนไลน์</div>
+        </div>
+      </div>
+
+      <div className="auth-stage__right">
+        <div className="auth-card">
+          <div style={{marginBottom:32}}>
+            <div className="page__eyebrow">เข้าสู่ระบบ</div>
+            <h2 style={{fontSize:26, fontWeight:500, margin:'0 0 8px', color:'var(--ink-0)'}}>ยืนยันตัวตนเพื่อดำเนินการ</h2>
+            <p className="muted" style={{fontSize:14, margin:0}}>ใช้ ThaiD หรือแอปพลิเคชันทางรัฐ เพื่อเข้าสู่ระบบอย่างปลอดภัย</p>
+          </div>
+
+          <div className="col gap-3" style={{gap:10}}>
+            <button className="sso-btn" onClick={() => go('dashboard')}>
+              <div className="sso-btn__ico" style={{background:'var(--ink-0)', color:'var(--paper-0)'}}>Th·D</div>
+              <div>
+                เข้าสู่ระบบด้วย ThaiD
+                <span className="sso-btn__sub">สำหรับผู้ถือบัตรประชาชนไทย</span>
+              </div>
+              <Icon name="arrow" size={14}/>
+            </button>
+            <button className="sso-btn" onClick={() => go('dashboard')}>
+              <div className="sso-btn__ico" style={{background:'var(--accent)', color:'white'}}>ทร</div>
+              <div>
+                เข้าสู่ระบบด้วยแอปทางรัฐ
+                <span className="sso-btn__sub">เปิดในโหมด Webview</span>
+              </div>
+              <Icon name="arrow" size={14}/>
+            </button>
+          </div>
+
+          <div className="divider" style={{margin:'24px 0'}}/>
+
+          <div className="notice">
+            <span className="notice__icon">i</span>
+            <div>
+              <b>ข้อมูลจาก ThaiD</b> (ชื่อ เลขบัตร) จะถูกนำมากรอกอัตโนมัติและไม่สามารถแก้ไขได้
+              หากไม่เคยใช้ ThaiD <a style={{color:'var(--accent-ink)'}} href="#">ดูวิธีสมัคร</a>
+            </div>
+          </div>
+
+          <div style={{marginTop:32, display:'flex', gap:24, fontSize:12, color:'var(--ink-3)'}}>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('staff-login'); }}>สำหรับเจ้าหน้าที่ →</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('verify'); }}>ตรวจสอบใบรับรอง →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LoginStaff = () => {
+  const { go, switchRole } = useApp();
+  const handle = () => { switchRole('staff'); go('dashboard'); };
+  return (
+    <div className="auth-stage">
+      <div className="auth-stage__left">
+        <div className="brand-lg">
+          <div className="brand-mark">BEC</div>
+          <div className="brand-txt">
+            <b>BEC Staff Console</b>
+            <span>Internal — พพ. only</span>
+          </div>
+        </div>
+        <div>
+          <div className="page__eyebrow" style={{color:'oklch(80% 0.06 170)'}}>สำหรับเจ้าหน้าที่ พพ.</div>
+          <h1 style={{fontSize:42, fontWeight:500, lineHeight:1.1, letterSpacing:'-0.01em', margin:'0 0 16px'}}>
+            ตรวจสอบ &<br/>
+            อนุมัติคำขอ<br/>
+            <span style={{color:'oklch(80% 0.1 170)'}}>ด้วยเวิร์กโฟลว์เดียว</span>
+          </h1>
+          <p style={{color:'oklch(75% 0.01 250)', fontSize:15, maxWidth:'46ch', lineHeight:1.6}}>
+            ระบบเวิร์กโฟลว์ตรวจเอกสาร ลงนามอิเล็กทรอนิกส์ และออกใบรับรอง
+            พร้อม Audit Trail ทุก action
+          </p>
+        </div>
+        <div style={{fontSize:11, fontFamily:'var(--font-mono)', color:'oklch(60% 0.01 250)', letterSpacing:'.08em'}}>
+          RESTRICTED · SSO ONLY · @dede.go.th
+        </div>
+      </div>
+      <div className="auth-stage__right">
+        <div className="auth-card">
+          <div style={{marginBottom:32}}>
+            <div className="page__eyebrow">เข้าสู่ระบบเจ้าหน้าที่</div>
+            <h2 style={{fontSize:26, fontWeight:500, margin:'0 0 8px'}}>Single Sign-On</h2>
+            <p className="muted" style={{fontSize:14, margin:0}}>เฉพาะบัญชีที่ได้รับสิทธิ์เท่านั้น</p>
+          </div>
+          <div className="col gap-3" style={{gap:10}}>
+            <button className="sso-btn" onClick={handle}>
+              <div className="sso-btn__ico">G</div>
+              <div>Sign in with Google Workspace<span className="sso-btn__sub">@dede.go.th domain</span></div>
+              <Icon name="arrow" size={14}/>
+            </button>
+            <button className="sso-btn" onClick={handle}>
+              <div className="sso-btn__ico">M</div>
+              <div>Sign in with Microsoft 365<span className="sso-btn__sub">Azure AD enterprise</span></div>
+              <Icon name="arrow" size={14}/>
+            </button>
+          </div>
+          <div className="divider" style={{margin:'24px 0'}}/>
+          <div className="notice notice--warn">
+            <span className="notice__icon">!</span>
+            <div>การเข้าใช้งานทุกครั้งจะถูกบันทึกใน <b>Audit Log</b> พร้อม IP และ timestamp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { LoginApplicant, LoginStaff });
+
+// ===== APPLICANT PAGES =====
+
+const ApplicantDashboard = () => {
+  const { go, state } = useApp();
+  const apps = state.applications;
+  const counts = {
+    all: apps.length,
+    active: apps.filter(a => ['submitted','reviewing','revise','pending'].includes(a.status)).length,
+    completed: apps.filter(a => a.status === 'completed').length,
+    revise: apps.filter(a => a.status === 'revise').length,
+  };
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div className="row row--between">
+          <div>
+            <div className="page__eyebrow">หน้าหลัก · ผู้ตรวจประเมิน</div>
+            <h1 className="page__title">สวัสดี คุณสมชาย</h1>
+            <p className="page__sub">ภาพรวมคำขอขึ้นทะเบียนและใบรับรองของคุณ</p>
+          </div>
+          <Btn variant="accent" icon="plus" size="lg" onClick={() => go('new')}>ยื่นคำขอใหม่</Btn>
+        </div>
+      </div>
+
+      {counts.revise > 0 && (
+        <div className="notice notice--warn mb-6">
+          <span className="notice__icon">!</span>
+          <div style={{flex:1}}>
+            <b>มีคำขอที่ต้องแก้ไข {counts.revise} รายการ</b> — เจ้าหน้าที่ส่งกลับให้แก้ไขเอกสาร กรุณาดำเนินการภายใน 15 วัน
+            <div className="mt-2">
+              <Btn variant="primary" size="sm" onClick={() => go('revise')}>ดูรายการที่ต้องแก้ไข →</Btn>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-4 mb-6">
+        <Stat primary label="คำขอทั้งหมด" value={counts.all} meta="ปีงบประมาณ 2568"/>
+        <Stat label="อยู่ระหว่างดำเนินการ" value={counts.active} meta="รอตรวจสอบ + รออนุมัติ"/>
+        <Stat label="อนุมัติแล้ว" value={counts.completed} meta="ใบรับรองใช้งานได้"/>
+        <Stat label="ต้องแก้ไข" value={counts.revise} meta={counts.revise ? 'ต้องดำเนินการด่วน' : '—'}/>
+      </div>
+
+      <div className="card mb-6">
+        <div className="card__head">
+          <h3>รายการคำขอของฉัน</h3>
+          <span className="hint">· {apps.length} รายการ</span>
+          <div style={{marginLeft:'auto', display:'flex', gap:8}}>
+            <Btn size="sm" icon="filter">กรอง</Btn>
+            <Btn size="sm" icon="download">Export</Btn>
+          </div>
+        </div>
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>เลขที่คำขอ</th>
+              <th>หลักสูตร</th>
+              <th>วันที่ยื่น</th>
+              <th>สถานะ</th>
+              <th>ความคืบหน้า</th>
+              <th className="actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {apps.map(a => (
+              <tr key={a.id}>
+                <td className="num">{a.id}</td>
+                <td>
+                  <div style={{maxWidth:'38ch', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.courseName}</div>
+                  {a.certNo && <div className="small muted mono">{a.certNo}</div>}
+                </td>
+                <td className="num muted">{thDate(a.appliedAt)}</td>
+                <td><StatusChip status={a.status}/></td>
+                <td>
+                  <div style={{display:'flex', alignItems:'center', gap:8}}>
+                    <div style={{flex:1, height:4, background:'var(--paper-2)', borderRadius:2, overflow:'hidden', maxWidth:100}}>
+                      <div style={{width: `${(a.progress/4)*100}%`, height:'100%', background:'var(--accent)'}}/>
+                    </div>
+                    <span className="small mono muted">{a.progress}/4</span>
+                  </div>
+                </td>
+                <td className="actions">
+                  {a.status === 'completed' && <Btn size="sm" icon="download">ใบรับรอง</Btn>}
+                  {a.status === 'revise' && <Btn size="sm" variant="accent" onClick={() => go('revise', a.id)}>แก้ไข</Btn>}
+                  {['submitted','reviewing','pending'].includes(a.status) && <Btn size="sm" onClick={() => go('timeline', a.id)}>ติดตาม</Btn>}
+                  {a.status === 'expired' && <Btn size="sm" disabled>หมดอายุ</Btn>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid grid-2">
+        <div className="card">
+          <div className="card__head">
+            <h3>การแจ้งเตือนล่าสุด</h3>
+          </div>
+          <div className="card__body col gap-4">
+            {[
+              { tone:'warn', t: 'เอกสารส่งกลับให้แก้ไข', d: 'APP-2568-00712 · กรุณาแก้ไขภายใน 15 วัน', time: '2 ชม. ที่แล้ว' },
+              { tone:'info', t: 'คำขอเข้าสู่ขั้นตอน e-Approval', d: 'APP-2568-00587 · รอผู้จัดการลงนาม', time: 'เมื่อวาน' },
+              { tone:'ok',   t: 'ใบรับรองพร้อมดาวน์โหลด', d: 'APP-2568-00412 · อายุถึง 8 พ.ย. 73', time: '2 สัปดาห์ที่แล้ว' },
+            ].map((n, i) => (
+              <div key={i} style={{display:'flex', gap:12, alignItems:'flex-start'}}>
+                <Chip tone={n.tone} dot/>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:500, color:'var(--ink-0)', fontSize:13}}>{n.t}</div>
+                  <div className="small muted">{n.d}</div>
+                </div>
+                <span className="small muted mono" style={{whiteSpace:'nowrap'}}>{n.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card__head"><h3>ใบรับรองที่ใช้งานได้</h3></div>
+          <div className="card__body">
+            <div style={{display:'grid', gridTemplateColumns:'auto 1fr', gap:20, alignItems:'center'}}>
+              <div className="cert" style={{width:140}}>
+                <div className="cert__inner">
+                  <div style={{fontFamily:'var(--font-mono)', fontSize:8, color:'var(--accent-ink)', letterSpacing:'.1em'}}>BEC CERT</div>
+                  <div style={{height:2, width:24, background:'var(--accent)', margin:'4px 0 8px'}}/>
+                  <div style={{fontSize:10, fontWeight:600, color:'var(--ink-0)', lineHeight:1.2}}>ใบรับรอง<br/>ผู้ตรวจประเมิน</div>
+                  <div style={{marginTop:'auto', fontSize:7, fontFamily:'var(--font-mono)', color:'var(--ink-3)'}}>ผต.บพ.2568/00412</div>
+                </div>
+              </div>
+              <div>
+                <div className="mono small muted">ผต.บพ.2568/00412</div>
+                <div style={{fontSize:15, fontWeight:500, margin:'2px 0 10px'}}>ผู้ตรวจประเมินอาคารฯ</div>
+                <div className="col gap-2 small">
+                  <div className="row"><span className="muted" style={{width:90}}>ออกเมื่อ</span><span className="mono">{thDate('2025-11-08')}</span></div>
+                  <div className="row"><span className="muted" style={{width:90}}>หมดอายุ</span><span className="mono">{thDate('2030-11-08')}</span></div>
+                  <div className="row"><span className="muted" style={{width:90}}>สถานะ</span><Chip tone="ok" dot>ใช้งานได้</Chip></div>
+                </div>
+                <div style={{marginTop:14, display:'flex', gap:8}}>
+                  <Btn size="sm" icon="download" onClick={() => go('certificate')}>ดาวน์โหลด</Btn>
+                  <Btn size="sm" icon="qr">QR</Btn>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { ApplicantDashboard });
+
+// ===== APPLICANT: 4-STEP APPLICATION FORM =====
+
+const StepIndicator = ({ current, total = 4, labels }) => (
+  <div className="stepper">
+    {Array.from({length: total}).map((_, i) => {
+      const state = i < current ? 'is-done' : i === current ? 'is-current' : '';
+      return (
+        <React.Fragment key={i}>
+          <div className={`stepper__item ${state}`}>
+            <div className="stepper__dot">{i < current ? <Icon name="check" size={14}/> : i+1}</div>
+            <div className="stepper__label">{labels[i]}</div>
+          </div>
+          {i < total - 1 && <div className={`stepper__line ${i < current ? 'is-done' : ''}`}/>}
+        </React.Fragment>
+      );
+    })}
+  </div>
+);
+
+const NewApplication = () => {
+  const { go } = useApp();
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState({
+    firstName: 'สมชาย', lastName: 'ใจดี', idCard: '1-1010-01234-56-7',
+    phone: '', email: '', address: '',
+    confirmProfile: false,
+    course: '', certFile: null,
+    profession: 'engineer', licenseNo: 'วฟก.3415', licenseVerified: null,
+    licenseExpires: '2028-04-22',
+    pdpa1: false, pdpa2: false,
+  });
+
+  const labels = ['ข้อมูลส่วนตัว', 'วุฒิบัตร', 'ใบประกอบวิชาชีพ', 'ยืนยัน + PDPA'];
+
+  const next = () => setStep(s => Math.min(3, s+1));
+  const prev = () => setStep(s => Math.max(0, s-1));
+  const update = (k, v) => setForm(f => ({...f, [k]: v}));
+
+  return (
+    <div className="page page--narrow">
+      <div className="page__head">
+        <div className="page__eyebrow">ยื่นคำขอใหม่ · APP-2568-DRAFT</div>
+        <h1 className="page__title">ยื่นคำขอขึ้นทะเบียนผู้ตรวจประเมิน</h1>
+        <p className="page__sub">กรอกข้อมูลให้ครบทั้ง 4 ขั้นตอน ระบบจะบันทึกร่างอัตโนมัติ คุณสามารถกลับมาแก้ไขได้ภายหลัง</p>
+      </div>
+
+      <div className="card mb-6">
+        <div style={{padding:'8px 24px', borderBottom:'1px solid var(--line)'}}>
+          <StepIndicator current={step} labels={labels}/>
+        </div>
+
+        <div className="card__body" style={{padding:32}}>
+          {step === 0 && <Step1 form={form} update={update}/>}
+          {step === 1 && <Step2 form={form} update={update}/>}
+          {step === 2 && <Step3 form={form} update={update}/>}
+          {step === 3 && <Step4 form={form} update={update} onSubmit={() => go('timeline')}/>}
+        </div>
+
+        <div style={{padding:'16px 24px', borderTop:'1px solid var(--line)', display:'flex', alignItems:'center', gap:12}}>
+          <div className="small muted mono" style={{display:'flex', alignItems:'center', gap:6}}>
+            <Icon name="check" size={13}/>บันทึกร่างอัตโนมัติ · 2 นาทีที่แล้ว
+          </div>
+          <div style={{marginLeft:'auto', display:'flex', gap:8}}>
+            {step > 0 && <Btn icon="arrowL" onClick={prev}>ย้อนกลับ</Btn>}
+            <Btn onClick={() => go('dashboard')}>บันทึกร่างและออก</Btn>
+            {step < 3 && <Btn variant="accent" iconRight="arrow" onClick={next}>ถัดไป</Btn>}
+            {step === 3 && <Btn variant="accent" iconRight="check" disabled={!form.pdpa1 || !form.pdpa2} onClick={() => go('timeline')}>ยืนยันการยื่นคำขอ</Btn>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Step1 = ({ form, update }) => (
+  <>
+    <h3 style={{margin:'0 0 4px', fontSize:18, fontWeight:500}}>ข้อมูลส่วนตัว</h3>
+    <p className="muted small mb-6">ข้อมูลจาก ThaiD ถูกกรอกให้อัตโนมัติและไม่สามารถแก้ไขได้</p>
+
+    <div className="notice notice--accent mb-6">
+      <span className="notice__icon">Th·D</span>
+      <div>ดึงข้อมูลจาก <b>ThaiD Profile API</b> สำเร็จ · {thDate('2025-11-10')}</div>
+    </div>
+
+    <div className="grid grid-2 mb-4">
+      <div className="field">
+        <label className="field__label">ชื่อ <span className="pill-dim">ThaiD · ล็อก</span></label>
+        <input className="input" value={form.firstName} readOnly/>
+      </div>
+      <div className="field">
+        <label className="field__label">นามสกุล <span className="pill-dim">ThaiD · ล็อก</span></label>
+        <input className="input" value={form.lastName} readOnly/>
+      </div>
+    </div>
+    <div className="field mb-4">
+      <label className="field__label">เลขประจำตัวประชาชน <span className="pill-dim">ThaiD · ล็อก</span></label>
+      <input className="input mono" value={form.idCard} readOnly/>
+    </div>
+    <div className="grid grid-2 mb-4">
+      <div className="field">
+        <label className="field__label">เบอร์โทรศัพท์ <span className="req">*</span></label>
+        <input className="input" placeholder="08X-XXX-XXXX" value={form.phone} onChange={e => update('phone', e.target.value)}/>
+      </div>
+      <div className="field">
+        <label className="field__label">อีเมล <span className="req">*</span></label>
+        <input className="input" placeholder="name@example.com" value={form.email} onChange={e => update('email', e.target.value)}/>
+        <span className="field__hint">ใช้สำหรับรับการแจ้งเตือนและใบรับรอง</span>
+      </div>
+    </div>
+    <div className="field mb-4">
+      <label className="field__label">ที่อยู่สำหรับติดต่อ <span className="req">*</span></label>
+      <textarea className="textarea" rows={3} placeholder="เลขที่ ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด รหัสไปรษณีย์" value={form.address} onChange={e => update('address', e.target.value)}/>
+    </div>
+    <label className="checkbox">
+      <input type="checkbox" checked={form.confirmProfile} onChange={e => update('confirmProfile', e.target.checked)}/>
+      <span>
+        ข้าพเจ้ารับรองว่าข้อมูลข้างต้นเป็นความจริง
+        <span className="sub">หากตรวจพบข้อมูลเท็จ ระบบจะยกเลิกคำขอและอาจดำเนินการตามกฎหมาย</span>
+      </span>
+    </label>
+  </>
+);
+
+const Step2 = ({ form, update }) => (
+  <>
+    <h3 style={{margin:'0 0 4px', fontSize:18, fontWeight:500}}>วุฒิบัตร / การฝึกอบรม</h3>
+    <p className="muted small mb-6">เลือกหลักสูตรและอัปโหลดสำเนาวุฒิบัตร (PDF ไม่เกิน 10MB)</p>
+
+    <div className="field mb-6">
+      <label className="field__label">หลักสูตรที่ผ่านการอบรม <span className="req">*</span></label>
+      <select className="select" value={form.course} onChange={e => update('course', e.target.value)}>
+        <option value="">— เลือกหลักสูตร —</option>
+        {COURSES.map(c => <option key={c} value={c}>{c}</option>)}
+      </select>
+      <span className="field__hint">หลักสูตรจาก Master Data · ปรับปรุงล่าสุด 15 ต.ค. 68</span>
+    </div>
+
+    <div className="field mb-4">
+      <label className="field__label">สำเนาวุฒิบัตร (หน้า + หลัง) <span className="req">*</span></label>
+      {form.certFile ? (
+        <div className="file-row">
+          <div className="file-row__icon">PDF</div>
+          <div className="file-row__body">
+            <div className="file-row__name">วุฒิบัตร_ผู้ตรวจประเมิน_2568.pdf</div>
+            <div className="file-row__meta">2.4 MB · 2 หน้า · สแกนผ่าน · signed URL expires 15 min</div>
+          </div>
+          <Btn size="sm" icon="eye">Preview</Btn>
+          <Btn size="sm" icon="x" variant="ghost" onClick={() => update('certFile', null)}>ลบ</Btn>
+        </div>
+      ) : (
+        <div className="upload" onClick={() => update('certFile', true)}>
+          <div className="upload__icon">↑</div>
+          <div className="upload__title">คลิกเพื่ออัปโหลด หรือลากไฟล์มาวาง</div>
+          <div className="upload__hint">PDF · สูงสุด 10 MB · สแกนหน้า-หลัง</div>
+        </div>
+      )}
+    </div>
+
+    <div className="notice">
+      <span className="notice__icon">i</span>
+      <div>ระบบจะสแกนไวรัสอัตโนมัติหลังอัปโหลด · ไฟล์ที่อัปโหลดจะถูกเก็บแบบเข้ารหัสและเข้าถึงผ่าน Signed URL เท่านั้น</div>
+    </div>
+  </>
+);
+
+const Step3 = ({ form, update }) => {
+  const verify = () => update('licenseVerified', true);
+  return (
+    <>
+      <h3 style={{margin:'0 0 4px', fontSize:18, fontWeight:500}}>ใบประกอบวิชาชีพ</h3>
+      <p className="muted small mb-6">ระบบจะตรวจสอบกับสภาวิศวกร / สภาสถาปนิกโดยอัตโนมัติ</p>
+
+      <div className="field mb-4">
+        <label className="field__label">ประเภทวิชาชีพ <span className="req">*</span></label>
+        <div className="radio-group">
+          <label className={`radio ${form.profession === 'engineer' ? 'is-active' : ''}`}>
+            <input type="radio" checked={form.profession === 'engineer'} onChange={() => update('profession', 'engineer')}/>
+            <div><div style={{fontWeight:500}}>วิศวกร</div><div className="small muted">ตรวจสอบกับสภาวิศวกร</div></div>
+          </label>
+          <label className={`radio ${form.profession === 'architect' ? 'is-active' : ''}`}>
+            <input type="radio" checked={form.profession === 'architect'} onChange={() => update('profession', 'architect')}/>
+            <div><div style={{fontWeight:500}}>สถาปนิก</div><div className="small muted">ตรวจสอบกับสภาสถาปนิก</div></div>
+          </label>
+        </div>
+      </div>
+
+      <div className="field mb-4">
+        <label className="field__label">เลขที่ใบอนุญาต <span className="req">*</span></label>
+        <div style={{display:'flex', gap:8}}>
+          <input className="input mono" style={{flex:1}} value={form.licenseNo} onChange={e => update('licenseNo', e.target.value)} placeholder="ภฟก.XXXX"/>
+          <Btn variant="primary" icon="refresh" onClick={verify}>ตรวจสอบ</Btn>
+        </div>
+      </div>
+
+      {form.licenseVerified === true && (
+        <div className="notice notice--ok mb-4">
+          <span className="notice__icon">✓</span>
+          <div style={{flex:1}}>
+            <b>ตรวจสอบสำเร็จ</b> · สภาวิศวกรยืนยันว่าใบอนุญาตเลขที่ <span className="mono">{form.licenseNo}</span> ยังมีผลบังคับใช้
+            <div className="row gap-4 mt-2 small">
+              <div><span className="muted">ประเภท:</span> <b>ภาคีวิศวกร สาขาวิศวกรรมไฟฟ้ากำลัง</b></div>
+              <div><span className="muted">วันหมดอายุ:</span> <span className="mono">{thDate(form.licenseExpires)}</span></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="notice">
+        <span className="notice__icon">i</span>
+        <div>หาก API ตรวจสอบขัดข้อง คุณสามารถ <a style={{color:'var(--accent-ink)'}} href="#">อัปโหลดสำเนาใบอนุญาตด้วยตนเอง</a> เพื่อให้เจ้าหน้าที่ตรวจสอบ</div>
+      </div>
+    </>
+  );
+};
+
+const Step4 = ({ form, update }) => (
+  <>
+    <h3 style={{margin:'0 0 4px', fontSize:18, fontWeight:500}}>ตรวจสอบและยืนยัน</h3>
+    <p className="muted small mb-6">ตรวจสอบข้อมูลทั้งหมด กดยืนยันเพื่อส่งคำขอเข้าสู่ระบบ</p>
+
+    <div style={{border:'1px solid var(--line)', borderRadius:10, overflow:'hidden', marginBottom:24}}>
+      {[
+        ['ข้อมูลส่วนตัว', [
+          ['ชื่อ-นามสกุล', `${form.firstName} ${form.lastName}`],
+          ['เลขประจำตัวประชาชน', form.idCard],
+          ['เบอร์โทร / อีเมล', `${form.phone || '—'} · ${form.email || '—'}`],
+        ]],
+        ['วุฒิบัตร', [
+          ['หลักสูตร', form.course || '—'],
+          ['ไฟล์แนบ', 'วุฒิบัตร_ผู้ตรวจประเมิน_2568.pdf (2.4 MB)'],
+        ]],
+        ['ใบประกอบวิชาชีพ', [
+          ['ประเภท', form.profession === 'engineer' ? 'วิศวกร' : 'สถาปนิก'],
+          ['เลขที่ใบอนุญาต', form.licenseNo],
+          ['ผลตรวจสอบ', <Chip tone="ok" dot key="v">ยืนยันแล้ว · สภาวิศวกร</Chip>],
+        ]],
+      ].map(([title, rows], i) => (
+        <div key={i} style={{borderBottom: i < 2 ? '1px solid var(--line)' : 'none'}}>
+          <div style={{padding:'12px 20px', background:'var(--paper-1)', fontSize:11, fontFamily:'var(--font-mono)', textTransform:'uppercase', letterSpacing:'.08em', color:'var(--ink-3)'}}>{title}</div>
+          {rows.map(([k, v], j) => (
+            <div key={j} style={{padding:'12px 20px', display:'grid', gridTemplateColumns:'180px 1fr', gap:16, borderTop: j > 0 ? '1px solid var(--line)' : 'none', fontSize:14}}>
+              <span className="muted">{k}</span><span>{v}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+
+    <div style={{background:'var(--paper-1)', border:'1px solid var(--line)', borderRadius:10, padding:20}}>
+      <div style={{fontSize:13, fontWeight:600, marginBottom:12, display:'flex', alignItems:'center', gap:8}}>
+        <Icon name="shield" size={14}/> ความยินยอม (PDPA)
+      </div>
+      <label className="checkbox">
+        <input type="checkbox" checked={form.pdpa1} onChange={e => update('pdpa1', e.target.checked)}/>
+        <span>ยินยอมให้เก็บและใช้ข้อมูลส่วนบุคคลเพื่อการขึ้นทะเบียนผู้ตรวจประเมิน
+          <span className="sub">ตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562</span>
+        </span>
+      </label>
+      <label className="checkbox">
+        <input type="checkbox" checked={form.pdpa2} onChange={e => update('pdpa2', e.target.checked)}/>
+        <span>ยินยอมให้เปิดเผยชื่อในทะเบียนสาธารณะและระบบตรวจสอบใบรับรอง
+          <span className="sub">เฉพาะชื่อ-นามสกุล เลขที่ใบรับรอง สถานะ และวันหมดอายุ</span>
+        </span>
+      </label>
+    </div>
+  </>
+);
+
+Object.assign(window, { NewApplication });
+
+// ===== APPLICANT: Timeline / Tracking, Revision, Certificate =====
+
+const Timeline = () => {
+  const { go, state } = useApp();
+  // Pick the "reviewing" app as focus
+  const app = state.applications.find(a => a.status === 'reviewing') || state.applications[1];
+  const steps = TIMELINE_FULL;
+  const currentIdx = 1; // reviewing
+
+  const events = [
+    { step: 0, title: 'ยื่นคำขอ',           time: '2025-10-04 09:42', desc: 'รับคำขอเข้าระบบ · ออกเลขที่คำขอ APP-2568-00587', status: 'done' },
+    { step: 0, title: 'ตรวจสอบความครบถ้วน', time: '2025-10-04 09:43', desc: 'ระบบตรวจสอบเอกสารครบถ้วน · ส่งเข้าคิวเจ้าหน้าที่', status: 'done' },
+    { step: 1, title: 'เจ้าหน้าที่รับเรื่อง', time: '2025-10-08 14:15', desc: 'คุณปิยะ เจริญพงศ์ รับเรื่องเพื่อตรวจสอบ', status: 'done' },
+    { step: 1, title: 'ตรวจสอบ API สภาวิศวกร', time: '2025-10-08 14:22', desc: 'ใบอนุญาต วฟก.3415 · ยืนยันสถานะ ใช้งานได้', status: 'done' },
+    { step: 1, title: 'อยู่ระหว่างตรวจสอบเอกสาร', time: '2025-11-10 10:00', desc: 'เจ้าหน้าที่กำลังตรวจสอบวุฒิบัตรและใบอนุญาตประกอบวิชาชีพ', status: 'current' },
+  ];
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div className="row" style={{marginBottom: 12}}>
+          <Btn size="sm" icon="arrowL" onClick={() => go('dashboard')}>กลับ</Btn>
+          <StatusChip status={app.status}/>
+          <span className="small muted mono">· {app.id}</span>
+        </div>
+        <h1 className="page__title">ติดตามสถานะคำขอ</h1>
+        <p className="page__sub">{app.courseName}</p>
+      </div>
+
+      <div className="grid" style={{gridTemplateColumns: '1fr 340px', gap: 24}}>
+        <div className="col gap-6">
+          {/* Big progress strip */}
+          <div className="card">
+            <div className="card__head">
+              <h3>ความคืบหน้า</h3>
+              <span className="hint">· {currentIdx+1} / {steps.length}</span>
+              <div style={{marginLeft:'auto'}} className="small muted mono">
+                เหลือ <b style={{color:'var(--warn)'}}>{app.daysLeft} วัน</b> จาก 60 วันทำการ
+              </div>
+            </div>
+            <div className="card__body">
+              <div style={{display:'grid', gridTemplateColumns:`repeat(${steps.length}, 1fr)`, gap:12}}>
+                {steps.map((s, i) => {
+                  const done = i < currentIdx;
+                  const cur = i === currentIdx;
+                  return (
+                    <div key={s.key} style={{
+                      padding:16, borderRadius:10,
+                      background: cur ? 'var(--accent-tint)' : done ? 'var(--paper-1)' : 'var(--paper-1)',
+                      border: `1px solid ${cur ? 'var(--accent-line)' : 'var(--line)'}`,
+                      position:'relative', minHeight: 96
+                    }}>
+                      <div className="row" style={{marginBottom:8}}>
+                        <div style={{
+                          width:22, height:22, borderRadius:'50%',
+                          background: done ? 'var(--accent)' : cur ? 'var(--paper-0)' : 'var(--paper-2)',
+                          border: `1.5px solid ${done || cur ? 'var(--accent)' : 'var(--line-strong)'}`,
+                          color: done ? 'white' : cur ? 'var(--accent-ink)' : 'var(--ink-3)',
+                          display:'grid', placeItems:'center', fontSize:11, fontWeight:600, fontFamily:'var(--font-mono)'
+                        }}>{done ? <Icon name="check" size={12}/> : i+1}</div>
+                        {cur && <Chip tone="accent" dot>กำลังดำเนินการ</Chip>}
+                        {done && <span className="small muted">เสร็จแล้ว</span>}
+                      </div>
+                      <div style={{fontWeight:500, fontSize:14, color:'var(--ink-0)'}}>{s.title}</div>
+                      <div className="small muted" style={{marginTop:2}}>{s.desc}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Event log */}
+          <div className="card">
+            <div className="card__head"><h3>ประวัติการดำเนินการ</h3><span className="hint">· {events.length} รายการ</span></div>
+            <div className="card__body">
+              <div className="timeline">
+                {events.map((e, i) => (
+                  <div key={i} className={`tl-step is-${e.status === 'current' ? 'current' : 'done'}`}>
+                    <div className="tl-step__dot">{e.status === 'current' ? '···' : <Icon name="check" size={14}/>}</div>
+                    <div className="tl-step__body">
+                      <h5>{e.title}</h5>
+                      <p>{e.desc}</p>
+                    </div>
+                    <div className="tl-step__meta">{e.time}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar: summary + contact */}
+        <div className="col gap-4">
+          <div className="card">
+            <div className="card__head"><h3>ข้อมูลคำขอ</h3></div>
+            <div className="card__body col gap-3 small">
+              {[
+                ['เลขที่คำขอ', <span className="mono" key="a">{app.id}</span>],
+                ['วันที่ยื่น', <span className="mono" key="b">{thDate(app.appliedAt)}</span>],
+                ['กำหนดครบ', <span className="mono" key="c">{thDate(app.dueAt)}</span>],
+                ['ผู้ตรวจสอบ', 'คุณปิยะ เจริญพงศ์'],
+                ['FR Ref', <span className="mono" key="d">FR-04, FR-05</span>],
+              ].map(([k, v], i) => (
+                <div key={i} className="row row--between"><span className="muted">{k}</span><span>{v}</span></div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{background:'var(--paper-1)'}}>
+            <div className="card__body col gap-3">
+              <div className="small mono muted" style={{letterSpacing:'.08em', textTransform:'uppercase'}}>Live updates</div>
+              <div className="row gap-2 small" style={{color:'var(--ok)'}}>
+                <span style={{width:6, height:6, borderRadius:'50%', background:'var(--ok)', boxShadow:'0 0 0 4px var(--ok-tint)', animation:'pulse 2s infinite'}}/>
+                เชื่อมต่อแบบ Real-time
+              </div>
+              <div className="small muted">ระบบจะอัปเดตสถานะและแจ้งเตือนคุณทันทีที่มีความเคลื่อนไหว</div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card__body">
+              <div className="row gap-3">
+                <Icon name="mail" size={20}/>
+                <div>
+                  <div style={{fontWeight:500, fontSize:13}}>ติดต่อเจ้าหน้าที่</div>
+                  <div className="small muted">สายด่วน 02-XXX-XXXX · วันทำการ 08:30–16:30</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== REVISION PAGE =====
+const Revision = () => {
+  const { go, state } = useApp();
+  const app = state.applications.find(a => a.status === 'revise') || state.applications[2];
+  const [items, setItems] = useState(REVISION_CHECKLIST.map(i => ({...i, done: false})));
+  const [deadline] = useState(14);
+
+  const allDone = items.every(i => i.done);
+
+  return (
+    <div className="page page--narrow">
+      <div className="page__head">
+        <div className="row" style={{marginBottom:12}}>
+          <Btn size="sm" icon="arrowL" onClick={() => go('dashboard')}>กลับ</Btn>
+          <StatusChip status="revise"/>
+          <span className="small muted mono">· {app.id}</span>
+        </div>
+        <h1 className="page__title">แก้ไขเอกสาร</h1>
+        <p className="page__sub">กรุณาแก้ไขรายการด้านล่างตามที่เจ้าหน้าที่แจ้ง และยืนยันการแก้ไขภายในกำหนด</p>
+      </div>
+
+      <div className="notice notice--warn mb-6">
+        <span className="notice__icon">⏱</span>
+        <div style={{flex:1}}>
+          <div><b>กำหนดแก้ไขภายใน {deadline} วัน</b> — หากเกินกำหนด ระบบจะยกเลิกคำขอโดยอัตโนมัติ</div>
+          <div className="small mt-2" style={{display:'flex', gap:16, alignItems:'center'}}>
+            <span className="mono">Deadline: {thDate('2025-11-24')}</span>
+            <div style={{flex:1, height:4, background:'oklch(92% 0.04 75)', borderRadius:2, overflow:'hidden', maxWidth:240}}>
+              <div style={{width: `${(deadline/15)*100}%`, height:'100%', background:'var(--warn)'}}/>
+            </div>
+            <span className="mono">เหลือ {deadline}/15 วัน</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="card mb-6">
+        <div className="card__head">
+          <h3>ข้อความจากเจ้าหน้าที่</h3>
+          <span className="hint">· ส่งเมื่อ 9 พ.ย. 68 เวลา 14:22</span>
+        </div>
+        <div className="card__body">
+          <div style={{display:'flex', gap:14}}>
+            <div className="avatar" style={{width:40, height:40, fontSize:14}}>ปจ</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13, fontWeight:500, marginBottom:2}}>ปิยะ เจริญพงศ์ <span className="muted" style={{fontWeight:400}}>· เจ้าหน้าที่ตรวจสอบ</span></div>
+              <div style={{background:'var(--paper-1)', padding:14, borderRadius:8, fontSize:14, lineHeight:1.6, color:'var(--ink-1)'}}>
+                เรียนผู้ยื่นคำขอ คำขอของท่านพบประเด็นที่ต้องแก้ไขดังนี้ กรุณาสแกนวุฒิบัตรหน้า-หลังใหม่ให้ชัดเจนและลงลายมือชื่อรับรองสำเนาถูกต้อง
+                พร้อมตรวจสอบว่าใบอนุญาตประกอบวิชาชีพที่แนบมายังไม่หมดอายุ หากมีข้อสงสัยโปรดติดต่อกลับ
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card mb-6">
+        <div className="card__head"><h3>รายการที่ต้องแก้ไข</h3><span className="hint">· {items.filter(i => i.done).length} / {items.length}</span></div>
+        <div className="card__body col gap-4">
+          {items.map((it, i) => (
+            <div key={it.id} style={{
+              border: `1px solid ${it.done ? 'var(--ok)' : 'var(--line)'}`,
+              background: it.done ? 'var(--ok-tint)' : 'var(--paper-0)',
+              borderRadius: 10, padding: 16,
+            }}>
+              <div className="row" style={{alignItems:'flex-start', gap:12}}>
+                <button className="iconbtn" style={{flexShrink:0, width:26, height:26, background: it.done ? 'var(--ok)' : 'var(--paper-0)', borderColor: it.done ? 'var(--ok)' : 'var(--line-strong)', color: it.done ? 'white' : 'var(--ink-3)'}}
+                  onClick={() => setItems(items.map((x,j) => j === i ? {...x, done: !x.done} : x))}>
+                  {it.done && <Icon name="check" size={14}/>}
+                </button>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:500, fontSize:14}}>{it.label}</div>
+                  <div className="small muted" style={{marginTop:2}}>{it.desc}</div>
+                  {!it.done && (
+                    <div className="upload" style={{marginTop:12, padding:16}} onClick={() => setItems(items.map((x,j) => j === i ? {...x, done: true} : x))}>
+                      <div className="upload__hint">คลิกเพื่ออัปโหลดไฟล์ใหม่</div>
+                    </div>
+                  )}
+                  {it.done && (
+                    <div className="file-row" style={{marginTop:12}}>
+                      <div className="file-row__icon">PDF</div>
+                      <div className="file-row__body">
+                        <div className="file-row__name">{it.id}_revised_v2.pdf</div>
+                        <div className="file-row__meta">เพิ่งอัปโหลด · 1.8 MB</div>
+                      </div>
+                      <Btn size="sm" icon="eye">Preview</Btn>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{padding:'16px 24px', borderTop:'1px solid var(--line)', display:'flex', justifyContent:'flex-end', gap:8}}>
+          <Btn onClick={() => go('dashboard')}>บันทึกและออก</Btn>
+          <Btn variant="accent" disabled={!allDone} iconRight="check" onClick={() => go('timeline')}>ยืนยันการแก้ไข</Btn>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== CERTIFICATE DOWNLOAD =====
+const Certificate = () => {
+  const { go, state } = useApp();
+  const app = state.applications.find(a => a.status === 'completed') || state.applications[0];
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div className="row" style={{marginBottom:12}}>
+          <Btn size="sm" icon="arrowL" onClick={() => go('dashboard')}>กลับ</Btn>
+          <StatusChip status="completed"/>
+          <span className="small muted mono">· {app.certNo}</span>
+        </div>
+        <h1 className="page__title">ใบรับรองผู้ตรวจประเมิน</h1>
+        <p className="page__sub">ดาวน์โหลด แชร์ หรือตรวจสอบความถูกต้องด้วย QR Code</p>
+      </div>
+
+      <div className="grid" style={{gridTemplateColumns: '1fr 380px', gap: 32, alignItems:'flex-start'}}>
+        <div className="card" style={{padding: 40, background: 'var(--paper-1)'}}>
+          <div className="cert" style={{maxWidth:540, margin:'0 auto'}}>
+            <div className="cert__inner" style={{justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontFamily:'var(--font-mono)', fontSize:10, color:'var(--accent-ink)', letterSpacing:'.14em', fontWeight:600}}>MINISTRY OF ENERGY · DEDE</div>
+                <div style={{height:2, width:40, background:'var(--accent)', margin:'8px 0 16px'}}/>
+                <h2 style={{fontSize:22, fontWeight:500, color:'var(--ink-0)', margin:0, letterSpacing:'-0.01em'}}>ใบรับรองผู้ตรวจประเมิน<br/>อาคารอนุรักษ์พลังงาน</h2>
+                <div style={{fontFamily:'var(--font-mono)', fontSize:10, color:'var(--ink-3)', marginTop:8, letterSpacing:'.08em'}}>BEC AUDITOR CERTIFICATE</div>
+              </div>
+
+              <div style={{textAlign:'center', padding:'24px 0'}}>
+                <div className="small muted" style={{fontFamily:'var(--font-mono)', letterSpacing:'.06em'}}>รับรองว่า</div>
+                <div style={{fontSize:28, fontWeight:500, margin:'12px 0 4px', color:'var(--ink-0)', letterSpacing:'-0.01em'}}>สมชาย ใจดี</div>
+                <div className="small muted">เป็นผู้ตรวจประเมินอาคารตามเกณฑ์การอนุรักษ์พลังงาน (BEC)</div>
+              </div>
+
+              <div style={{display:'grid', gridTemplateColumns:'1fr auto 1fr', gap:20, alignItems:'end', fontSize:11}}>
+                <div>
+                  <div className="mono small muted" style={{letterSpacing:'.06em'}}>CERT NO.</div>
+                  <div className="mono" style={{fontSize:13, fontWeight:600, color:'var(--ink-0)'}}>{app.certNo}</div>
+                  <div className="mono small muted" style={{marginTop:10, letterSpacing:'.06em'}}>VALID</div>
+                  <div className="mono" style={{fontSize:12, color:'var(--ink-1)'}}>{thDate(app.updatedAt)} → {thDate(app.expiresAt)}</div>
+                </div>
+                <div className="placeholder" style={{width:72, height:72}}>QR</div>
+                <div style={{textAlign:'right'}}>
+                  <div style={{height:1, background:'var(--ink-3)', marginBottom:4}}/>
+                  <div className="small" style={{color:'var(--ink-1)', fontWeight:500}}>ผู้อำนวยการ</div>
+                  <div className="small muted">กรมพัฒนาพลังงานทดแทนฯ</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col gap-4">
+          <div className="card">
+            <div className="card__head"><h3>รายละเอียดใบรับรอง</h3></div>
+            <div className="card__body col gap-3 small">
+              {[
+                ['เลขที่', <span className="mono" key="a">{app.certNo}</span>],
+                ['ชื่อ-นามสกุล', 'สมชาย ใจดี'],
+                ['เลขประจำตัวประชาชน', <span className="mono" key="b">1-1010-01234-56-7</span>],
+                ['ประเภทวิชาชีพ', 'วิศวกรรมไฟฟ้ากำลัง'],
+                ['ออกเมื่อ', <span className="mono" key="c">{thDate(app.updatedAt)}</span>],
+                ['หมดอายุ', <span className="mono" key="d">{thDate(app.expiresAt)}</span>],
+                ['สถานะ', <Chip tone="ok" dot key="e">ใช้งานได้</Chip>],
+              ].map(([k, v], i) => (
+                <div key={i} className="row row--between"><span className="muted">{k}</span><span>{v}</span></div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card__body col gap-3">
+              <Btn variant="accent" block icon="download" size="lg">ดาวน์โหลด PDF</Btn>
+              <Btn block icon="share">แชร์ลิงก์ตรวจสอบ</Btn>
+              <Btn block icon="qr">แสดง QR Code</Btn>
+              <div className="small muted mono" style={{textAlign:'center', marginTop:8}}>Signed URL · หมดอายุใน 15 นาที</div>
+            </div>
+          </div>
+
+          <div className="card" style={{background:'var(--accent-tint)', borderColor:'var(--accent-line)'}}>
+            <div className="card__body">
+              <div className="row gap-3" style={{alignItems:'flex-start'}}>
+                <Icon name="shield" size={18}/>
+                <div>
+                  <div style={{fontWeight:500, fontSize:13, color:'var(--accent-ink)'}}>การต่ออายุ</div>
+                  <div className="small" style={{color:'var(--accent-ink)', marginTop:2}}>ระบบจะแจ้งเตือนก่อนหมดอายุ 90 วัน</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { Timeline, Revision, Certificate });
+
+// ===== STAFF PAGES: Dashboard, Queue, Review =====
+
+const StaffDashboard = () => {
+  const { go } = useApp();
+  const urgent = STAFF_QUEUE.filter(q => q.daysLeft < 10).length;
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div className="row row--between">
+          <div>
+            <div className="page__eyebrow">เจ้าหน้าที่ พพ. · ภาพรวม</div>
+            <h1 className="page__title">Workspace ตรวจสอบ</h1>
+            <p className="page__sub">ภาพรวมคิวงาน สถานะคำขอ และรายการเร่งด่วน</p>
+          </div>
+          <div className="row gap-2">
+            <Btn icon="filter">ตัวกรอง</Btn>
+            <Btn variant="primary" icon="doc" onClick={() => go('batch')}>พิมพ์สรุปรายชื่อ</Btn>
+          </div>
+        </div>
+      </div>
+
+      {urgent > 0 && (
+        <div className="notice notice--err mb-6">
+          <span className="notice__icon">!</span>
+          <div style={{flex:1}}>
+            <b>{urgent} คำขอใกล้ครบ 60 วันทำการ</b> (เหลือน้อยกว่า 10 วัน) — กรุณาเร่งดำเนินการ
+          </div>
+          <Btn size="sm" variant="danger" onClick={() => go('queue')}>ดูทั้งหมด →</Btn>
+        </div>
+      )}
+
+      <div className="grid grid-4 mb-6">
+        <Stat primary label="ในคิวทั้งหมด" value={STAFF_QUEUE.length} meta="รับเรื่องแล้ว"/>
+        <Stat label="รอรับเรื่อง" value={STAFF_QUEUE.filter(q => !q.assignee).length} meta="ยังไม่มีผู้ตรวจ"/>
+        <Stat label="กำลังตรวจสอบ" value={STAFF_QUEUE.filter(q => q.status === 'reviewing').length} meta="ของฉัน: 3"/>
+        <Stat label="ใกล้ครบกำหนด" value={urgent} meta="< 10 วันทำการ"/>
+      </div>
+
+      <div className="grid" style={{gridTemplateColumns: '1.7fr 1fr', gap: 24}}>
+        <div className="card">
+          <div className="card__head">
+            <h3>คิวของฉัน</h3>
+            <span className="hint">· ผู้ตรวจ: คุณปิยะ</span>
+            <Btn size="sm" style={{marginLeft:'auto'}} onClick={() => go('queue')}>ดูคิวทั้งหมด →</Btn>
+          </div>
+          <table className="tbl">
+            <thead>
+              <tr><th>เลขคำขอ</th><th>ผู้ยื่น</th><th>ครบกำหนด</th><th>สถานะ</th><th className="actions"></th></tr>
+            </thead>
+            <tbody>
+              {STAFF_QUEUE.filter(q => q.assignee).slice(0, 5).map(q => (
+                <tr key={q.id}>
+                  <td className="num">{q.id}</td>
+                  <td>{q.applicant}<div className="small muted">{q.profession}</div></td>
+                  <td>
+                    <div className="mono">{thDate(q.dueAt)}</div>
+                    <div className={`small mono ${q.daysLeft < 10 ? '' : 'muted'}`} style={{color: q.daysLeft < 10 ? 'var(--err)' : undefined}}>
+                      {q.daysLeft < 10 ? `⚠ เหลือ ${q.daysLeft} วัน` : `เหลือ ${q.daysLeft} วัน`}
+                    </div>
+                  </td>
+                  <td><StatusChip status={q.status}/></td>
+                  <td className="actions"><Btn size="sm" variant="accent" onClick={() => go('review', q.id)}>ตรวจ</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="col gap-4">
+          <div className="card">
+            <div className="card__head"><h3>สถิติเดือนนี้</h3></div>
+            <div className="card__body col gap-4">
+              <MiniChart/>
+              <div className="row row--between small">
+                <div><div className="muted">อนุมัติ</div><div style={{fontSize:18, fontWeight:500}} className="mono">42</div></div>
+                <div><div className="muted">ส่งกลับ</div><div style={{fontSize:18, fontWeight:500}} className="mono">7</div></div>
+                <div><div className="muted">เฉลี่ย (วัน)</div><div style={{fontSize:18, fontWeight:500}} className="mono">18.4</div></div>
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="card__head"><h3>Activity ล่าสุด</h3></div>
+            <div className="card__body col gap-3 small">
+              {[
+                ['14:22', 'คุณปิยะ ส่งกลับแก้ไข APP-2568-00712'],
+                ['13:05', 'คุณอารีย์ อนุมัติ APP-2568-00401'],
+                ['11:30', 'ระบบ ออก Cert ผต.บพ.2568/00398'],
+                ['10:12', 'คุณปิยะ รับเรื่อง APP-2568-00587'],
+              ].map(([t, desc], i) => (
+                <div key={i} className="row gap-3"><span className="mono muted" style={{width:48}}>{t}</span><span>{desc}</span></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MiniChart = () => {
+  const bars = [12, 18, 22, 16, 28, 24, 30, 26, 32, 28, 35, 42];
+  const max = Math.max(...bars);
+  return (
+    <div style={{display:'flex', alignItems:'flex-end', gap:6, height:80}}>
+      {bars.map((v, i) => (
+        <div key={i} style={{
+          flex:1, height: `${(v/max)*100}%`,
+          background: i === bars.length-1 ? 'var(--accent)' : 'var(--paper-3)',
+          borderRadius:'2px 2px 0 0'
+        }}/>
+      ))}
+    </div>
+  );
+};
+
+// ===== Queue =====
+const StaffQueue = () => {
+  const { go } = useApp();
+  const [filter, setFilter] = useState('all');
+  const filtered = filter === 'all' ? STAFF_QUEUE : STAFF_QUEUE.filter(q => q.status === filter);
+
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div className="page__eyebrow">คิวตรวจสอบเอกสาร</div>
+        <h1 className="page__title">Queue — คำขอที่ต้องดำเนินการ</h1>
+      </div>
+
+      <div className="card mb-6">
+        <div className="card__head" style={{gap:16, flexWrap:'wrap'}}>
+          <div className="seg">
+            {[['all','ทั้งหมด'],['submitted','ใหม่'],['reviewing','กำลังตรวจ'],['revise','ส่งกลับ'],['pending','รออนุมัติ']].map(([k, l]) => (
+              <button key={k} className={filter === k ? 'is-active' : ''} onClick={() => setFilter(k)}>{l}</button>
+            ))}
+          </div>
+          <div className="row gap-2" style={{marginLeft:'auto'}}>
+            <Btn size="sm" icon="filter">กรอง</Btn>
+            <Btn size="sm" icon="download">Export</Btn>
+            <Btn size="sm" variant="primary" icon="plus">Assign ให้ตัวเอง</Btn>
+          </div>
+        </div>
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th style={{width:32}}><input type="checkbox"/></th>
+              <th>เลขคำขอ</th>
+              <th>ผู้ยื่น</th>
+              <th>วันที่ยื่น</th>
+              <th>ครบกำหนด</th>
+              <th>สถานะ</th>
+              <th>ผู้ตรวจ</th>
+              <th className="actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(q => (
+              <tr key={q.id}>
+                <td><input type="checkbox"/></td>
+                <td className="num">{q.id}</td>
+                <td>{q.applicant}<div className="small muted">{q.profession}</div></td>
+                <td className="num muted">{thDate(q.submittedAt)}</td>
+                <td>
+                  <div className="mono">{thDate(q.dueAt)}</div>
+                  <div className={`small mono`} style={{color: q.daysLeft < 10 ? 'var(--err)' : 'var(--ink-3)'}}>
+                    เหลือ {q.daysLeft} วัน
+                  </div>
+                </td>
+                <td><StatusChip status={q.status}/></td>
+                <td className="muted">{q.assignee || <span className="small">— ยังไม่ assign —</span>}</td>
+                <td className="actions">
+                  <Btn size="sm" onClick={() => go('review', q.id)}>เปิดดู</Btn>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{padding:'12px 20px', borderTop:'1px solid var(--line)', display:'flex', alignItems:'center', gap:12}}>
+          <div className="small muted mono">แสดง 1–{filtered.length} จาก {filtered.length} รายการ</div>
+          <div style={{marginLeft:'auto'}} className="row gap-1">
+            <Btn size="sm" icon="chevL"/>
+            <span className="small mono" style={{padding:'0 8px'}}>1 / 1</span>
+            <Btn size="sm" icon="chevR"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== Review =====
+const StaffReview = () => {
+  const { go } = useApp();
+  const q = STAFF_QUEUE[0];
+  const [action, setAction] = useState(null); // 'approve' | 'reject' | null
+  const [reasons, setReasons] = useState({});
+
+  const reasonList = [
+    'สำเนาวุฒิบัตรไม่ชัด/อ่านไม่ออก',
+    'ขาดลายมือชื่อรับรองสำเนา',
+    'ใบอนุญาตประกอบวิชาชีพหมดอายุ',
+    'ข้อมูลไม่ตรงกับเอกสารแนบ',
+    'เอกสารไม่ครบถ้วน',
+  ];
+
+  return (
+    <div className="page" style={{maxWidth:'none', paddingRight:24}}>
+      <div className="page__head">
+        <div className="row" style={{marginBottom:12}}>
+          <Btn size="sm" icon="arrowL" onClick={() => go('queue')}>กลับคิว</Btn>
+          <StatusChip status={q.status}/>
+          <span className="small muted mono">· {q.id}</span>
+          <span className="small muted" style={{marginLeft:12}}>เหลือ <b style={{color:'var(--warn)'}}>{q.daysLeft} วัน</b></span>
+        </div>
+        <h1 className="page__title">ตรวจสอบเอกสาร</h1>
+        <p className="page__sub">{q.applicant} · {q.profession}</p>
+      </div>
+
+      <div className="grid" style={{gridTemplateColumns: '1.4fr 380px', gap:24, alignItems:'flex-start'}}>
+        {/* Left: PDF viewer + applicant info */}
+        <div className="col gap-4">
+          {/* Applicant info */}
+          <div className="card">
+            <div className="card__head"><h3>ข้อมูลผู้ยื่น</h3><span className="hint">อ่านอย่างเดียว · ThaiD verified</span></div>
+            <div className="card__body">
+              <div className="grid grid-3 gap-4 small">
+                {[
+                  ['ชื่อ-นามสกุล', q.applicant],
+                  ['เลขบัตร', <span className="mono" key="i">1-1010-01234-56-7</span>],
+                  ['เบอร์โทร', <span className="mono" key="p">081-234-5678</span>],
+                  ['อีเมล', <span className="mono" key="e">somchai@example.com</span>],
+                  ['ประเภท', q.profession],
+                  ['เลขที่ใบอนุญาต', <span className="mono" key="l">วฟก.3415</span>],
+                ].map(([k, v], i) => (
+                  <div key={i}><div className="muted" style={{fontSize:11, textTransform:'uppercase', fontFamily:'var(--font-mono)', letterSpacing:'.06em', marginBottom:3}}>{k}</div><div>{v}</div></div>
+                ))}
+              </div>
+              <div className="divider"/>
+              <div className="row gap-3">
+                <Chip tone="ok" dot>ใบอนุญาต: สภาวิศวกรยืนยัน</Chip>
+                <Chip tone="ok" dot>ThaiD: ยืนยันตัวตน</Chip>
+                <Chip tone="default">API ตรวจสอบ · 8 ต.ค. 68 14:22</Chip>
+              </div>
+            </div>
+          </div>
+
+          {/* PDF Viewer */}
+          <div className="card" style={{padding:0, overflow:'hidden'}}>
+            <div className="card__head">
+              <h3>เอกสารแนบ</h3>
+              <div className="seg" style={{marginLeft:12}}>
+                <button className="is-active">วุฒิบัตร</button>
+                <button>ใบอนุญาตวิชาชีพ</button>
+                <button>แบบฟอร์ม</button>
+              </div>
+              <span className="hint" style={{marginLeft:'auto'}}>Signed URL · 14:58</span>
+            </div>
+            <div className="pdf-viewer" style={{borderRadius:0}}>
+              <div className="pdf-viewer__bar">
+                <span>วุฒิบัตร_ผู้ตรวจประเมิน_2568.pdf</span>
+                <span style={{marginLeft:'auto'}}>Page 1 / 2</span>
+                <span>·</span>
+                <span>100%</span>
+                <button className="btn btn--sm" style={{background:'transparent', color:'white', borderColor:'oklch(35% 0.012 250)'}}>
+                  <Icon name="pen" size={12}/> Annotate
+                </button>
+              </div>
+              <div className="pdf-viewer__canvas">
+                <div className="pdf-page">
+                  <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:16}}>
+                    <div className="placeholder" style={{width:48, height:48, aspectRatio:'1'}}>ตรา</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13, fontWeight:600, color:'var(--ink-0)'}}>วุฒิบัตร</div>
+                      <div className="small muted">หลักสูตรผู้ตรวจประเมินอาคารฯ 2568</div>
+                    </div>
+                  </div>
+                  <div className="pdf-page__line w80"/>
+                  <div className="pdf-page__line w60"/>
+                  <div className="pdf-page__line w80"/>
+                  <div className="pdf-page__line w40"/>
+                  <div style={{flex:1}}/>
+                  <div className="pdf-page__line w40"/>
+                  <div className="pdf-page__line w60"/>
+                  <div className="pdf-annot" style={{top:'35%', left:'20%', width:'40%'}}>คอมเมนต์: ลายเซ็นไม่ชัด</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Checklist */}
+          <div className="card">
+            <div className="card__head"><h3>Checklist การตรวจ</h3></div>
+            <div className="card__body col gap-2">
+              {[
+                ['วุฒิบัตรชัดเจน อ่านออก', true],
+                ['มีลายมือชื่อรับรองสำเนา', false],
+                ['ใบอนุญาตวิชาชีพยังไม่หมดอายุ', true],
+                ['ข้อมูลตรงกับ ThaiD Profile', true],
+                ['ข้อมูลการติดต่อครบถ้วน', true],
+              ].map(([l, ok], i) => (
+                <label key={i} className="row gap-3" style={{padding:'6px 0'}}>
+                  <input type="checkbox" defaultChecked={ok} style={{accentColor: 'var(--accent)'}}/>
+                  <span className="small" style={{flex:1, color: ok ? 'var(--ink-1)' : 'var(--ink-3)'}}>{l}</span>
+                  {ok ? <Chip tone="ok" dot>ผ่าน</Chip> : <Chip tone="warn" dot>ไม่ผ่าน</Chip>}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Action panel */}
+        <div className="card" style={{position:'sticky', top:72}}>
+          <div className="card__head"><h3>การตัดสินใจ</h3></div>
+          <div className="card__body">
+            <div className="radio-group mb-4" style={{flexDirection:'column'}}>
+              <label className={`radio ${action === 'approve' ? 'is-active' : ''}`}>
+                <input type="radio" checked={action === 'approve'} onChange={() => setAction('approve')}/>
+                <div><div style={{fontWeight:500}}>เอกสารถูกต้อง</div><div className="small muted">ส่งต่อขั้นตอน e-Approval</div></div>
+              </label>
+              <label className={`radio ${action === 'reject' ? 'is-active' : ''}`}>
+                <input type="radio" checked={action === 'reject'} onChange={() => setAction('reject')}/>
+                <div><div style={{fontWeight:500}}>ส่งกลับแก้ไข</div><div className="small muted">ผู้ยื่นต้องแก้ไขภายใน 15 วัน</div></div>
+              </label>
+            </div>
+
+            {action === 'reject' && (
+              <>
+                <div className="field mb-3">
+                  <label className="field__label">เหตุผล (เลือกได้หลายข้อ)</label>
+                  <div className="col gap-1">
+                    {reasonList.map((r, i) => (
+                      <label key={i} className="checkbox" style={{padding:'4px 0'}}>
+                        <input type="checkbox" checked={!!reasons[i]} onChange={e => setReasons({...reasons, [i]: e.target.checked})}/>
+                        <span style={{fontSize:13}}>{r}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="field mb-4">
+                  <label className="field__label">เหตุผลเพิ่มเติม</label>
+                  <textarea className="textarea" rows={3} placeholder="ระบุรายละเอียดที่ผู้ยื่นต้องแก้ไข"/>
+                </div>
+                <div className="notice mb-4" style={{fontSize:12}}>
+                  <span className="notice__icon">📧</span>
+                  <div>ระบบจะส่งอีเมล <span className="mono">no-reply@dede.go.th</span> พร้อม BCC เจ้าหน้าที่</div>
+                </div>
+              </>
+            )}
+
+            {action === 'approve' && (
+              <div className="notice notice--ok mb-4" style={{fontSize:12}}>
+                <span className="notice__icon">✓</span>
+                <div>เปลี่ยนสถานะเป็น <b>รออนุมัติ</b> · ส่งต่อผู้จัดการเพื่อ e-Signature</div>
+              </div>
+            )}
+
+            <div className="col gap-2">
+              <Btn variant="accent" block disabled={!action} onClick={() => go('queue')}>ยืนยัน</Btn>
+              <Btn variant="ghost" block>บันทึกและปิด</Btn>
+            </div>
+          </div>
+          <div style={{padding:'12px 20px', borderTop:'1px solid var(--line)', background:'var(--paper-1)'}}>
+            <div className="small muted mono" style={{letterSpacing:'.06em', textTransform:'uppercase', marginBottom:6}}>Audit</div>
+            <div className="small muted" style={{fontFamily:'var(--font-mono)', lineHeight:1.6}}>
+              ผู้ตรวจ: คุณปิยะ เจริญพงศ์<br/>
+              IP: 10.0.12.45<br/>
+              เปิดดู: 14:22:08<br/>
+              Signed URL expires: 14:58:00
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { StaffDashboard, StaffQueue, StaffReview });
+
+// ===== ADMIN PAGES + PUBLIC VERIFY =====
+
+const AdminUsers = () => {
+  const users = [
+    { n: 'ปิยะ เจริญพงศ์',    e: 'piya@dede.go.th',    r: 'Staff',   s: 'active',   lastLogin: '2025-11-10 09:14' },
+    { n: 'อารีย์ สุขสมบูรณ์', e: 'aree@dede.go.th',    r: 'Manager', s: 'active',   lastLogin: '2025-11-10 08:42' },
+    { n: 'วสันต์ ตั้งใจ',      e: 'wasan@dede.go.th',   r: 'Staff',   s: 'active',   lastLogin: '2025-11-09 16:00' },
+    { n: 'Admin ระบบ',       e: 'admin@dede.go.th',   r: 'Admin',   s: 'active',   lastLogin: '2025-11-10 10:00' },
+    { n: 'นิตยา ศรีสวัสดิ์',   e: 'nittaya@dede.go.th', r: 'Staff',   s: 'disabled', lastLogin: '2025-10-02 11:12' },
+  ];
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div className="row row--between">
+          <div>
+            <div className="page__eyebrow">Admin · User Management</div>
+            <h1 className="page__title">ผู้ใช้งานระบบ</h1>
+            <p className="page__sub">จัดการบัญชีเจ้าหน้าที่ สิทธิ์การเข้าถึง (RBAC) และการ Impersonate</p>
+          </div>
+          <Btn variant="accent" icon="plus">เพิ่มผู้ใช้</Btn>
+        </div>
+      </div>
+      <div className="card">
+        <div className="card__head">
+          <div className="seg">
+            <button className="is-active">ทั้งหมด ({users.length})</button>
+            <button>Admin</button><button>Manager</button><button>Staff</button><button>ปิดใช้งาน</button>
+          </div>
+          <span style={{marginLeft:'auto'}} className="hint mono">RBAC enforced · Audit ON</span>
+        </div>
+        <table className="tbl">
+          <thead><tr><th>ชื่อ</th><th>Email</th><th>Role</th><th>สถานะ</th><th>เข้าใช้ล่าสุด</th><th className="actions"></th></tr></thead>
+          <tbody>
+            {users.map((u, i) => (
+              <tr key={i}>
+                <td><div className="row gap-2"><div className="avatar" style={{width:28, height:28, fontSize:11}}>{u.n.slice(0,2)}</div>{u.n}</div></td>
+                <td className="mono muted">{u.e}</td>
+                <td><Chip tone={u.r === 'Admin' ? 'accent' : u.r === 'Manager' ? 'info' : 'default'}>{u.r}</Chip></td>
+                <td>{u.s === 'active' ? <Chip tone="ok" dot>ใช้งาน</Chip> : <Chip tone="err" dot>ปิด</Chip>}</td>
+                <td className="mono small muted">{u.lastLogin}</td>
+                <td className="actions">
+                  <Btn size="sm" icon="user">Impersonate</Btn>
+                  <Btn size="sm" icon="pen">แก้ไข</Btn>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const AdminMaster = () => {
+  const [tab, setTab] = useState('courses');
+  const tabs = [['courses','หลักสูตร'], ['cert-types','ประเภทการรับรอง'], ['checklist','Checklist เอกสาร'], ['criteria','เกณฑ์คุณสมบัติ']];
+  return (
+    <div className="page">
+      <div className="page__head">
+        <div className="page__eyebrow">Admin · Master Data</div>
+        <h1 className="page__title">ข้อมูลหลักของระบบ</h1>
+        <p className="page__sub">หลักสูตร ประเภท Checklist และเกณฑ์คุณสมบัติ · มี Version history</p>
+      </div>
+
+      <div className="row gap-2 mb-4">
+        {tabs.map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className="btn" style={{
+            background: tab === k ? 'var(--ink-0)' : 'var(--paper-0)',
+            color: tab === k ? 'var(--paper-0)' : 'var(--ink-1)',
+            borderColor: tab === k ? 'var(--ink-0)' : 'var(--line-strong)',
+          }}>{l}</button>
+        ))}
+        <Btn style={{marginLeft:'auto'}} variant="accent" icon="plus">เพิ่ม</Btn>
+      </div>
+
+      <div className="card">
+        <table className="tbl">
+          <thead><tr><th>รหัส</th><th>ชื่อ</th><th>ปีการศึกษา</th><th>อ้างอิงโดย</th><th>Version</th><th>อัปเดตล่าสุด</th><th className="actions"></th></tr></thead>
+          <tbody>
+            {COURSES.map((c, i) => (
+              <tr key={i}>
+                <td className="mono">CRS-{String(i+1).padStart(4,'0')}</td>
+                <td>{c}</td>
+                <td className="mono">2568</td>
+                <td className="mono">{Math.floor(Math.random()*120 + 10)} คำขอ</td>
+                <td><Chip tone="accent">v{i+1}.0</Chip></td>
+                <td className="mono small muted">{thDate('2025-10-15')}</td>
+                <td className="actions"><Btn size="sm" icon="pen">แก้ไข</Btn></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ===== PUBLIC VERIFY =====
+const PublicVerify = () => {
+  const { go } = useApp();
+  return (
+    <div className="app app--noshell" style={{background:'var(--paper-1)'}}>
+      <div style={{maxWidth:960, margin:'0 auto', padding:'40px 24px 80px'}}>
+        <div className="row row--between mb-6">
+          <div className="brand-lg">
+            <div className="brand-mark">BEC</div>
+            <div className="brand-txt">
+              <b>BEC Auditor Verify</b>
+              <span>ตรวจสอบใบรับรอง</span>
+            </div>
+          </div>
+          <Btn size="sm" icon="arrowL" onClick={() => go('login-applicant')}>กลับสู่หน้าหลัก</Btn>
+        </div>
+
+        <div className="card" style={{overflow:'hidden'}}>
+          <div style={{padding:'40px 48px 32px', background: 'linear-gradient(180deg, var(--accent-tint), var(--paper-0))', borderBottom:'1px solid var(--accent-line)'}}>
+            <div className="row" style={{marginBottom:20}}>
+              <Chip tone="ok" dot solid style={{fontSize:13}}>VALID</Chip>
+              <span className="mono small muted" style={{marginLeft:12}}>ตรวจสอบเมื่อ: 10 พ.ย. 68 · 14:38</span>
+            </div>
+            <div className="row gap-6" style={{alignItems:'flex-start'}}>
+              <div className="placeholder" style={{width:140, height:140, flexShrink:0, background:'var(--paper-0)', borderColor:'var(--accent-line)'}}>QR SCANNED</div>
+              <div style={{flex:1}}>
+                <div className="mono small muted" style={{letterSpacing:'.08em'}}>CERTIFICATE NO.</div>
+                <div className="mono" style={{fontSize:22, fontWeight:600, color:'var(--ink-0)', marginBottom:16}}>ผต.บพ.2568/00412</div>
+                <div style={{fontSize:28, fontWeight:500, color:'var(--ink-0)', letterSpacing:'-0.01em'}}>สมชาย ใจดี</div>
+                <div className="muted">ผู้ตรวจประเมินอาคารอนุรักษ์พลังงาน (BEC)</div>
+              </div>
+            </div>
+          </div>
+          <div className="card__body">
+            <div className="grid grid-3 gap-4">
+              {[
+                ['ประเภทวิชาชีพ', 'วิศวกรรมไฟฟ้ากำลัง'],
+                ['วันที่ออก', thDate('2025-11-08')],
+                ['วันหมดอายุ', thDate('2030-11-08')],
+                ['ออกโดย', 'กรมพัฒนาพลังงานทดแทน'],
+                ['อายุใบรับรอง', '5 ปี'],
+                ['สถานะ', <Chip tone="ok" dot key="s">ใช้งานได้</Chip>],
+              ].map(([k, v], i) => (
+                <div key={i} style={{padding:16, background:'var(--paper-1)', borderRadius:8}}>
+                  <div className="muted small mono" style={{textTransform:'uppercase', letterSpacing:'.06em', marginBottom:4}}>{k}</div>
+                  <div style={{fontWeight:500}}>{v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{padding:'16px 24px', borderTop:'1px solid var(--line)', background:'var(--paper-1)', display:'flex', alignItems:'center', gap:12, fontSize:12, color:'var(--ink-3)', fontFamily:'var(--font-mono)'}}>
+            <Icon name="shield" size={13}/> ตรวจสอบกับฐานข้อมูลทางการของ พพ. · ไม่ต้องลงชื่อเข้าใช้ · Rate limit 30/min per IP
+          </div>
+        </div>
+
+        <div className="grid grid-3 gap-4 mt-6">
+          {[
+            ['VALID', 'ok', 'ใบรับรองยังมีผลบังคับใช้'],
+            ['EXPIRED', 'warn', 'หมดอายุแล้ว ต้องต่ออายุ'],
+            ['NOT FOUND', 'err', 'ไม่พบในระบบ อาจเป็นของปลอม'],
+          ].map(([s, tone, d], i) => (
+            <div key={i} className="card" style={{padding:16}}>
+              <Chip tone={tone} dot solid>{s}</Chip>
+              <div className="small muted mt-2">{d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { AdminUsers, AdminMaster, PublicVerify });
+
+
+// ===== TWEAKS DEFAULTS =====
+const TWEAK_DEFAULTS = {
+  "accentHue": 170,
+  "density": "compact",
+  "theme": "light",
+  "state": "active"
+};
+
+const PAGE_MAP = {
+  applicant: {
+    pages: ['dashboard', 'new', 'timeline', 'revise', 'certificate'],
+    crumb: {
+      dashboard:   ['ผู้ตรวจประเมิน', 'หน้าหลัก'],
+      new:         ['ผู้ตรวจประเมิน', 'ยื่นคำขอใหม่'],
+      timeline:    ['ผู้ตรวจประเมิน', 'ติดตามสถานะ'],
+      revise:      ['ผู้ตรวจประเมิน', 'แก้ไขเอกสาร'],
+      certificate: ['ผู้ตรวจประเมิน', 'ใบรับรอง'],
+      guide:       ['ผู้ตรวจประเมิน', 'คู่มือ'],
+      contact:     ['ผู้ตรวจประเมิน', 'ติดต่อ'],
+    },
+  },
+  staff: {
+    pages: ['dashboard', 'queue', 'review', 'approvals', 'batch', 'reports'],
+    crumb: {
+      dashboard: ['เจ้าหน้าที่ พพ.', 'ภาพรวม'],
+      queue:     ['เจ้าหน้าที่ พพ.', 'คิวตรวจสอบ'],
+      review:    ['เจ้าหน้าที่ พพ.', 'คิว', 'ตรวจสอบเอกสาร'],
+      approvals: ['เจ้าหน้าที่ พพ.', 'e-Approval'],
+      batch:     ['เจ้าหน้าที่ พพ.', 'พิมพ์สรุปรายชื่อ'],
+      reports:   ['เจ้าหน้าที่ พพ.', 'รายงาน'],
+    },
+  },
+  admin: {
+    pages: ['users', 'master', 'templates', 'audit', 'documents'],
+    crumb: {
+      users:     ['Admin', 'ผู้ใช้งาน'],
+      master:    ['Admin', 'ข้อมูลหลัก'],
+      templates: ['Admin', 'เทมเพลต'],
+      audit:     ['Admin', 'Audit Log'],
+      documents: ['Admin', 'ค้นหาเอกสาร'],
+    },
+  },
+};
+
+function App() {
+  const [route, setRoute] = useState({ view: 'login-applicant' });
+  const [role, setRole] = useState('applicant');
+  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', tweaks.theme);
+    document.documentElement.setAttribute('data-density', tweaks.density);
+    document.documentElement.style.setProperty('--accent', `oklch(45% 0.085 ${tweaks.accentHue})`);
+    document.documentElement.style.setProperty('--accent-ink', `oklch(38% 0.09 ${tweaks.accentHue})`);
+    document.documentElement.style.setProperty('--accent-tint', `oklch(95% 0.025 ${tweaks.accentHue})`);
+    document.documentElement.style.setProperty('--accent-line', `oklch(82% 0.05 ${tweaks.accentHue})`);
+  }, [tweaks]);
+
+  const applications = React.useMemo(() => {
+    if (tweaks.state === 'empty')      return [];
+    if (tweaks.state === 'first-time') return APPLICATIONS.filter(a => a.status === 'reviewing').slice(0,1);
+    if (tweaks.state === 'completed')  return APPLICATIONS.filter(a => a.status === 'completed');
+    return APPLICATIONS;
+  }, [tweaks.state]);
+
+  const go = (view, id) => {
+    if (view === '__logout') {
+      setRoute({ view: role === 'applicant' ? 'login-applicant' : 'staff-login' });
+      return;
+    }
+    setRoute({ view, id });
+    window.scrollTo(0, 0);
+  };
+
+  const switchRole = (r) => {
+    setRole(r);
+    setRoute({ view: r === 'admin' ? 'users' : 'dashboard' });
+    window.scrollTo(0, 0);
+  };
+
+  const ctx = { role, page: route.view, go, switchRole, state: { applications }, tweaks, setTweaks };
+
+  const Placeholder = ({ title, sub }) => (
+    <div className="page">
+      <div className="page__head">
+        <div className="page__eyebrow">หน้าในระบบ</div>
+        <h1 className="page__title">{title}</h1>
+        <p className="page__sub">{sub}</p>
+      </div>
+      <div className="card">
+        <div className="card__body" style={{padding:64, textAlign:'center'}}>
+          <div className="placeholder" style={{width:'100%', height:320, marginBottom:16}}>screen layout</div>
+          <div className="muted small">หน้านี้อยู่ใน scope ของ journey และจะออกแบบในรอบถัดไป</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPage = () => {
+    const v = route.view;
+    if (v === 'login-applicant') return <LoginApplicant/>;
+    if (v === 'staff-login')     return <LoginStaff/>;
+    if (v === 'verify')          return <PublicVerify/>;
+
+    const pages = {
+      dashboard:   role === 'applicant' ? <ApplicantDashboard/> : <StaffDashboard/>,
+      new:         <NewApplication/>,
+      timeline:    <Timeline/>,
+      revise:      <Revision/>,
+      certificate: <Certificate/>,
+      guide:       <Placeholder title="คู่มือการใช้งาน" sub="เอกสาร PDF และ วิดีโอแนะนำการใช้งานระบบ"/>,
+      contact:     <Placeholder title="ติดต่อเจ้าหน้าที่" sub="ช่องทางสอบถาม / แจ้งปัญหา"/>,
+      queue:       <StaffQueue/>,
+      review:      <StaffReview/>,
+      approvals:   <Placeholder title="e-Approval" sub="ผู้จัดการลงนามอิเล็กทรอนิกส์ (OTP / DGA Digital Sign)"/>,
+      batch:       <Placeholder title="พิมพ์สรุปรายชื่อ (Step 3)" sub="Generate File 1–4 ผ่าน Worker Queue"/>,
+      reports:     <Placeholder title="Analytics & Reports" sub="สถิติรายเดือน/รายปี · Export XLSX/PDF"/>,
+      users:       <AdminUsers/>,
+      master:      <AdminMaster/>,
+      templates:   <Placeholder title="Template Management" sub="เทมเพลต Word (File 1–4) + Version control"/>,
+      audit:       <Placeholder title="Audit Log" sub="Login · action · IP · timestamp · retention 1 year"/>,
+      documents:   <Placeholder title="Document Search" sub="ค้นหาและดาวน์โหลดเอกสารด้วย Signed URL (15 min)"/>,
+    };
+
+    const meta = PAGE_MAP[role];
+    const crumb = meta && meta.crumb[v] ? meta.crumb[v] : ['BEC Platform', v];
+    const body = pages[v] || <Placeholder title="หน้าไม่พบ" sub={v}/>;
+    return <Shell crumb={crumb}>{body}</Shell>;
+  };
+
+  const HUES = [
+    { label: 'Teal',   v: 170 },
+    { label: 'Navy',   v: 245 },
+    { label: 'Green',  v: 150 },
+    { label: 'Amber',  v: 70  },
+    { label: 'Plum',   v: 310 },
+  ];
+
+  const TweaksPanel = () => {
+    const update = (k, v) => setTweaks(t => ({ ...t, [k]: v }));
+    return (
+      <div className="tweaks">
+        <div className="tweaks__head">
+          <h4>Tweaks</h4>
+          <button className="x" onClick={() => setTweaksOpen(false)}>×</button>
+        </div>
+        <div className="tweaks__body">
+          <div className="tweaks__row">
+            <label>Accent hue</label>
+            <div className="swatches">
+              {HUES.map(h => (
+                <button key={h.v} title={h.label}
+                  className={`swatch ${tweaks.accentHue === h.v ? 'is-active' : ''}`}
+                  style={{background: `oklch(45% 0.085 ${h.v})`}}
+                  onClick={() => update('accentHue', h.v)}/>
+              ))}
+            </div>
+          </div>
+          <div className="tweaks__row">
+            <label>Theme</label>
+            <div className="seg">
+              <button className={tweaks.theme==='light'?'is-active':''} onClick={()=>update('theme','light')}>Light</button>
+              <button className={tweaks.theme==='dark'?'is-active':''} onClick={()=>update('theme','dark')}>Dark</button>
+            </div>
+          </div>
+          <div className="tweaks__row">
+            <label>Density</label>
+            <div className="seg">
+              <button className={tweaks.density==='comfortable'?'is-active':''} onClick={()=>update('density','comfortable')}>Comfortable</button>
+              <button className={tweaks.density==='compact'?'is-active':''} onClick={()=>update('density','compact')}>Compact</button>
+            </div>
+          </div>
+          <div className="tweaks__row">
+            <label>Applicant state</label>
+            <div className="seg">
+              <button className={tweaks.state==='empty'?'is-active':''} onClick={()=>update('state','empty')}>Empty</button>
+              <button className={tweaks.state==='first-time'?'is-active':''} onClick={()=>update('state','first-time')}>1 คำขอ</button>
+              <button className={tweaks.state==='active'?'is-active':''} onClick={()=>update('state','active')}>Active</button>
+            </div>
+          </div>
+          <div className="tweaks__row">
+            <label>Jump to screen</label>
+            <div style={{display:'flex', flexDirection:'column', gap:4}}>
+              {[
+                ['login-applicant','Login (ผู้ยื่น)'],
+                ['staff-login','Login (เจ้าหน้าที่)'],
+                ['verify','Public Verify'],
+                ['dashboard','Dashboard'],
+                ['new','ยื่นคำขอ 4 steps'],
+                ['timeline','Timeline'],
+                ['revise','แก้ไขเอกสาร'],
+                ['certificate','ใบรับรอง'],
+                ['queue','Queue'],
+                ['review','Review + PDF'],
+                ['users','Users (Admin)'],
+                ['master','Master Data'],
+              ].map(([k,l]) => (
+                <button key={k} className="btn btn--sm"
+                  style={{justifyContent:'flex-start', background: route.view===k?'var(--accent-tint)':'var(--paper-0)', borderColor:'var(--line)', color: route.view===k?'var(--accent-ink)':'var(--ink-2)', fontWeight: route.view===k?500:400}}
+                  onClick={()=>go(k)}>{l}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <AppCtx.Provider value={ctx}>
+      {renderPage()}
+      <button
+        onClick={()=>setTweaksOpen(o=>!o)}
+        style={{position:'fixed', bottom:20, right:tweaksOpen?324:20, zIndex:999, width:40, height:40, borderRadius:'50%', background:'var(--ink-0)', color:'var(--paper-0)', border:'none', fontSize:16, boxShadow:'0 4px 16px rgba(0,0,0,.2)', cursor:'pointer', transition:'right .2s'}}
+        title="Tweaks"
+      >⚙</button>
+      {tweaksOpen && <TweaksPanel/>}
+    </AppCtx.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
