@@ -509,6 +509,7 @@ a { color: inherit; }
 .tbl .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .tbl .actions { text-align: right; white-space: nowrap; }
 .tbl .muted { color: var(--ink-3); }
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 /* ============ TIMELINE ============ */
 .timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
@@ -903,6 +904,12 @@ a { color: inherit; }
   .card__body { padding: var(--sp-4); }
   .stepper__label { font-size: var(--t-xs); }
   .radio-group { flex-direction: column; }
+  .tbl--stack thead { display: none; }
+  .tbl--stack tbody tr { display: block; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
+  .tbl--stack tbody td { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border: none; gap: var(--sp-2); }
+  .tbl--stack tbody td::before { content: attr(data-label); font-size: 10px; color: var(--ink-3); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; min-width: 86px; }
+  .tbl--stack tbody td.actions { justify-content: flex-end; padding-top: var(--sp-2); margin-top: 2px; border-top: 1px solid var(--line); }
+  .tbl--stack tbody td.actions::before { display: none; }
 }
 
 @keyframes pulse { 0%, 100% { opacity:1 } 50% { opacity:.4 } }
@@ -1410,7 +1417,8 @@ const ApplicantDashboard = () => {
             <Btn size="sm" icon="download">Export</Btn>
           </div>
         </div>
-        <table className="tbl">
+        <div className="tbl-wrap">
+        <table className="tbl tbl--stack">
           <thead>
             <tr>
               <th>เลขที่คำขอ</th>
@@ -1424,16 +1432,16 @@ const ApplicantDashboard = () => {
           <tbody>
             {apps.map(a => (
               <tr key={a.id}>
-                <td className="num">{a.id}</td>
-                <td>
+                <td className="num" data-label="เลขที่คำขอ">{a.id}</td>
+                <td data-label="หลักสูตร">
                   <div style={{maxWidth:'38ch', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{a.courseName}</div>
                   {a.certNo && <div className="small muted mono">{a.certNo}</div>}
                 </td>
-                <td className="num muted">{thDate(a.appliedAt)}</td>
-                <td><StatusChip status={a.status}/></td>
-                <td>
-                  <div style={{display:'flex', alignItems:'center', gap:8}}>
-                    <div style={{flex:1, height:4, background:'var(--paper-2)', borderRadius:2, overflow:'hidden', maxWidth:100}}>
+                <td className="num muted" data-label="วันที่ยื่น">{thDate(a.appliedAt)}</td>
+                <td data-label="สถานะ"><StatusChip status={a.status}/></td>
+                <td data-label="คืบหน้า">
+                  <div style={{display:'flex', alignItems:'center', gap:8, flex:1}}>
+                    <div style={{flex:1, height:4, background:'var(--paper-2)', borderRadius:2, overflow:'hidden'}}>
                       <div style={{width: `${(a.progress/4)*100}%`, height:'100%', background:'var(--accent)'}}/>
                     </div>
                     <span className="small mono muted">{a.progress}/4</span>
@@ -1449,6 +1457,7 @@ const ApplicantDashboard = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div className="grid grid-2">
