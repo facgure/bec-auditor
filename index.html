@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=1280"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BEC Auditor Platform — Frontend Prototype</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -851,11 +851,58 @@ a { color: inherit; }
 }
 .sso-btn__sub { display: block; font-size: var(--t-xs); font-weight: 400; color: var(--ink-3); margin-top: 2px; }
 
-@media (max-width: 900px) {
+/* ============ HAMBURGER + SIDEBAR OVERLAY ============ */
+.ham-btn { display: none; }
+.sidebar-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,15,25,.45);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+/* ≤1024px — small laptop */
+@media (max-width: 1024px) {
+  :root { --sidebar-w: 210px; }
+  .page { padding: var(--sp-6) var(--sp-6) var(--sp-10); }
+  .topbar__search { width: 220px; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ≤768px — tablet */
+@media (max-width: 768px) {
   .app { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,.15);
+  }
+  .sidebar.is-open { transform: translateX(0); }
+  .ham-btn { display: grid; }
+  .topbar__search { width: 180px; }
+  .topbar__search kbd { display: none; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
   .auth-stage { grid-template-columns: 1fr; }
   .auth-stage__left { display: none; }
+}
+
+/* ≤480px — mobile */
+@media (max-width: 480px) {
+  .page { padding: var(--sp-4) var(--sp-4) var(--sp-8); }
+  .topbar { padding: 0 var(--sp-4); gap: var(--sp-2); }
+  .topbar__search { display: none; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .page__title { font-size: var(--t-2xl); }
+  .stat__value { font-size: var(--t-2xl); }
+  .tl-step { grid-template-columns: 32px 1fr; }
+  .tl-step__meta { display: none; }
+  .tweaks { width: calc(100vw - 24px); right: 12px; bottom: 12px; }
+  .card__body { padding: var(--sp-4); }
+  .stepper__label { font-size: var(--t-xs); }
+  .radio-group { flex-direction: column; }
 }
 
 @keyframes pulse { 0%, 100% { opacity:1 } 50% { opacity:.4 } }
@@ -1078,12 +1125,13 @@ const ROLE_META = {
   admin:     { name: 'Admin Console', role: 'System Administrator', initials: 'AD' },
 };
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { role, page, go } = useApp();
   const navs = SIDEBAR_NAVS[role] || [];
   const me = ROLE_META[role];
+  const nav = (id) => { go(id); onClose && onClose(); };
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? ' is-open' : ''}`}>
       <div className="sidebar__brand">
         <div className="brand-mark">BEC</div>
         <div className="brand-txt">
@@ -1098,7 +1146,7 @@ const Sidebar = () => {
             <button
               key={item.id}
               className={`sidebar__item ${page === item.id ? 'is-active' : ''}`}
-              onClick={() => go(item.id)}
+              onClick={() => nav(item.id)}
             >
               <Icon name={item.icon} size={15}/>
               {item.label}
@@ -1113,7 +1161,7 @@ const Sidebar = () => {
           <b>{me.name}</b>
           <span>{me.role}</span>
         </div>
-        <button className="iconbtn" style={{marginLeft:'auto', width:28, height:28}} onClick={() => go('__logout')} title="ออกจากระบบ">
+        <button className="iconbtn" style={{marginLeft:'auto', width:28, height:28}} onClick={() => { go('__logout'); onClose && onClose(); }} title="ออกจากระบบ">
           <Icon name="logout" size={14}/>
         </button>
       </div>
@@ -1121,10 +1169,11 @@ const Sidebar = () => {
   );
 };
 
-const Topbar = ({ crumb }) => {
+const Topbar = ({ crumb, onMenuClick }) => {
   const { role, switchRole } = useApp();
   return (
     <div className="topbar">
+      <button className="iconbtn ham-btn" onClick={onMenuClick} title="เมนู"><Icon name="menu" size={16}/></button>
       <div className="crumb">
         {crumb.map((c, i) => (
           <React.Fragment key={i}>
@@ -1151,15 +1200,19 @@ const Topbar = ({ crumb }) => {
   );
 };
 
-const Shell = ({ crumb, children }) => (
-  <div className="app">
-    <Sidebar/>
-    <main className="main">
-      <Topbar crumb={crumb}/>
-      {children}
-    </main>
-  </div>
-);
+const Shell = ({ crumb, children }) => {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  return (
+    <div className="app">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}/>
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}/>}
+      <main className="main">
+        <Topbar crumb={crumb} onMenuClick={() => setSidebarOpen(o => !o)}/>
+        {children}
+      </main>
+    </div>
+  );
+};
 
 Object.assign(window, { Shell, Sidebar, Topbar, ROLE_META });
 
